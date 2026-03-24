@@ -47,11 +47,10 @@ Wenn deine Installation bereits über Docker lokal läuft (z. B. `http://localho
 - Produktions-Passwörter nicht hartcodieren
 - SQL-Dumps vor Veröffentlichung auf persönliche Daten prüfen
 
-## GitHub Upload
+## Dokumentation
 
-Eine Schritt-für-Schritt-Anleitung findest du hier:
-
-- `docs/GITHUB_UPLOAD_DE.md`
+- GitHub Upload: `docs/GITHUB_UPLOAD_DE.md`
+- Lokales Docker-Setup (`devenv`): `docs/LOCAL_SETUP_DEVENV_DE.md`
 
 ## Lizenz
 
