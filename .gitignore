@@ -1,0 +1,19 @@
+# Secrets / local config
+**/.famtask_cfg.php
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local archives / exports (optional)
+*.zip
+*.sql.bak
