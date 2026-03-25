@@ -22,6 +22,8 @@ FamTask v1.2 ist eine einfache Web-App mit:
 - `action=verify` – Familiencode prüfen
 - `action=families` – Familien auflisten
 - `action=ical` – iCal-Termine importieren
+- `action=backup` – DB-Daten als Backup-Datei herunterladen (JSON)
+- `action=restore` – Backup-Datei hochladen und wiederherstellen (JSON)
 
 ## Versionierung/Migrationen
 

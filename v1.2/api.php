@@ -1,6 +1,6 @@
 <?php
 /**
- * FamTask – api.php  v1.2.0
+ * FamTask – api.php  v1.2.1
  * ─────────────────────────────────────────────────────────────────────────────
  * Einzige Backend-Datei für:
  *   • Installer   → api.php im Browser (erster Aufruf)
@@ -8,10 +8,11 @@
  *   • Updater     → api.php?action=update
  *   • Statistiken → api.php?action=stats
  *   • iCal-Proxy  → api.php?action=ical  (Google Calendar Import – NEU)
+ *   • Backup      → api.php?action=backup / api.php?action=restore
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-define('APP_VERSION', '1.2.0');
+define('APP_VERSION', '1.2.1');
 define('CFG',         __DIR__ . '/.famtask_cfg.php');
 
 // ── Datenbank-Migrationen ────────────────────────────────────────────────────
@@ -114,6 +115,16 @@ if ($action === 'families') {
 if ($action === 'ical') {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
     handleIcal(getDB(getCfg())); exit;
+}
+
+// Backup / Restore (Admin)
+if ($action === 'backup') {
+    if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
+    handleBackup(getDB(getCfg())); exit;
+}
+if ($action === 'restore') {
+    if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
+    handleRestore(getDB(getCfg())); exit;
 }
 
 // Daten-API
@@ -528,6 +539,316 @@ function icalUnescape(string $s): string {
 
 
 // ══════════════════════════════════════════════════════════════════════════════
+//  BACKUP / RESTORE (Admin)
+// ══════════════════════════════════════════════════════════════════════════════
+function ensureBackupTables(PDO $pdo): void {
+    // Base-Tabellen (falls noch nicht vorhanden)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS famtask_data (
+        family_code VARCHAR(10) NOT NULL DEFAULT 'FAM001',
+        data_key    VARCHAR(80) NOT NULL,
+        data_value  LONGTEXT,
+        updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (family_code, data_key),
+        INDEX idx_family (family_code)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("ALTER TABLE famtask_data
+        ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS famtask_meta (
+        meta_key   VARCHAR(80) NOT NULL PRIMARY KEY,
+        meta_value VARCHAR(255)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // families + sicherstellen, dass family_code/PK korrekt sind (Alt-Installs)
+    ensureFamilyTable($pdo);
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS famtask_stats (
+        id          INT AUTO_INCREMENT PRIMARY KEY,
+        family_code VARCHAR(10) NOT NULL DEFAULT 'FAM001',
+        day         DATE NOT NULL,
+        child_id    VARCHAR(20) NOT NULL,
+        child_name  VARCHAR(80) NOT NULL,
+        event_type  ENUM('task_done','task_missed','media_used') NOT NULL,
+        ref_id      VARCHAR(80) NOT NULL,
+        ref_label   VARCHAR(120),
+        minutes     INT DEFAULT 0,
+        created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_day (day),
+        INDEX idx_child (child_id),
+        INDEX idx_fc (family_code)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS famtask_ical_events (
+        id          INT AUTO_INCREMENT PRIMARY KEY,
+        family_code VARCHAR(10) NOT NULL DEFAULT 'FAM001',
+        uid         VARCHAR(200) NOT NULL,
+        title       VARCHAR(200),
+        date_start  DATE NOT NULL,
+        date_end    DATE,
+        time_start  VARCHAR(10),
+        description VARCHAR(500),
+        source_url  VARCHAR(500),
+        imported_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_fam_uid (family_code, uid),
+        INDEX idx_fc_date (family_code, date_start)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
+function handleBackup(PDO $pdo): void {
+    $scope = strtolower(trim($_GET['scope'] ?? 'all'));
+    if (!in_array($scope, ['all', 'family'], true)) $scope = 'all';
+
+    $familyCode = null;
+    if ($scope === 'family') {
+        // Für family-backup muss explizit ein fc angegeben sein.
+        $rawFc = $_GET['fc'] ?? ($_SERVER['HTTP_X_FAMILY_CODE'] ?? '');
+        $rawFc = preg_replace('/[^A-Z0-9]/', '', strtoupper(trim((string)$rawFc)));
+        if ($rawFc === '') {
+            http_response_code(400);
+            jsonOut(['ok'=>false,'msg'=>'fc erforderlich für scope=family']);
+            return;
+        }
+        $familyCode = $rawFc;
+    }
+
+    $exportedAt = date('c');
+    $dbVer = getDbVersion($pdo);
+
+    $meta = $pdo->query("SELECT meta_key,meta_value FROM famtask_meta ORDER BY meta_key ASC")->fetchAll();
+
+    $families = [];
+    if ($scope === 'family') {
+        $st = $pdo->prepare("SELECT code,name,created_at FROM famtask_families WHERE code=? ORDER BY created_at DESC");
+        $st->execute([$familyCode]);
+    } else {
+        $st = $pdo->query("SELECT code,name,created_at FROM famtask_families ORDER BY created_at DESC");
+    }
+    $families = $st->fetchAll();
+
+    $whereSql = '';
+    $params = [];
+    if ($scope === 'family') { $whereSql = " WHERE family_code=?"; $params = [$familyCode]; }
+
+    $data = [];
+    $st = $pdo->prepare("SELECT family_code,data_key,data_value,updated_at FROM famtask_data".$whereSql);
+    $st->execute($params);
+    $data = $st->fetchAll();
+
+    $stats = [];
+    $st = $pdo->prepare("SELECT family_code,day,child_id,child_name,event_type,ref_id,ref_label,minutes,created_at FROM famtask_stats".$whereSql." ORDER BY created_at DESC");
+    $st->execute($params);
+    $stats = $st->fetchAll();
+
+    $ical = [];
+    $st = $pdo->prepare("SELECT family_code,uid,title,date_start,date_end,time_start,description,source_url,imported_at FROM famtask_ical_events".$whereSql." ORDER BY imported_at DESC");
+    $st->execute($params);
+    $ical = $st->fetchAll();
+
+    $payload = [
+        'format' => 'famtask-backup-v1',
+        'app_version' => APP_VERSION,
+        'db_version' => $dbVer,
+        'exported_at' => $exportedAt,
+        'scope' => $scope,
+        'family_code' => $familyCode,
+        'meta' => $meta,
+        'families' => $families,
+        'data' => $data,
+        'stats' => $stats,
+        'ical_events' => $ical,
+    ];
+
+    $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($json === false) {
+        http_response_code(500);
+        jsonOut(['ok'=>false,'msg'=>'Backup konnte nicht serialisiert werden.']);
+        return;
+    }
+
+    $filename = 'famtask-backup-'.date('Ymd-His').'-v'.APP_VERSION.'.json';
+    header('Content-Type: application/json; charset=utf-8');
+    header('Content-Disposition: attachment; filename="'.$filename.'"');
+    echo $json;
+}
+
+function handleRestore(PDO $pdo): void {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        jsonOut(['ok'=>false,'msg'=>'restore via POST']);
+        return;
+    }
+
+    $raw = null;
+    if (!empty($_FILES['backup']['tmp_name'])) {
+        $maxBytes = 20 * 1024 * 1024;
+        if (!empty($_FILES['backup']['size']) && intval($_FILES['backup']['size']) > $maxBytes) {
+            http_response_code(413);
+            jsonOut(['ok'=>false,'msg'=>'Backup-Datei zu gross (max 20MB)']);
+            return;
+        }
+        $raw = file_get_contents($_FILES['backup']['tmp_name']);
+    } else {
+        $raw = file_get_contents('php://input');
+    }
+
+    if (!is_string($raw) || trim($raw) === '') {
+        http_response_code(400);
+        jsonOut(['ok'=>false,'msg'=>'Keine Backup-Datei/JSON uebergeben.']);
+        return;
+    }
+
+    if (strlen($raw) > (25 * 1024 * 1024)) {
+        http_response_code(413);
+        jsonOut(['ok'=>false,'msg'=>'Backup-JSON zu gross (max 25MB)']);
+        return;
+    }
+
+    $backup = json_decode($raw, true);
+    if (!is_array($backup)) {
+        http_response_code(400);
+        jsonOut(['ok'=>false,'msg'=>'Ungültiges Backup-JSON']);
+        return;
+    }
+
+    if (($backup['format'] ?? '') !== 'famtask-backup-v1') {
+        http_response_code(400);
+        jsonOut(['ok'=>false,'msg'=>'Unbekanntes Backup-Format']);
+        return;
+    }
+
+    $scope = strtolower(trim($backup['scope'] ?? 'all'));
+    if (!in_array($scope, ['all', 'family'], true)) $scope = 'all';
+    $familyCode = $backup['family_code'] ?? null;
+    if ($scope === 'family' && (!is_string($familyCode) || trim($familyCode) === '')) {
+        http_response_code(400);
+        jsonOut(['ok'=>false,'msg'=>'Backup scope=family erfordert family_code']);
+        return;
+    }
+
+    try {
+        ensureBackupTables($pdo);
+
+        $pdo->beginTransaction();
+
+        if ($scope === 'family') {
+            $fc = preg_replace('/[^A-Z0-9]/', '', strtoupper(trim((string)$familyCode)));
+            $pdo->prepare("DELETE FROM famtask_data WHERE family_code=?")->execute([$fc]);
+            $pdo->prepare("DELETE FROM famtask_stats WHERE family_code=?")->execute([$fc]);
+            $pdo->prepare("DELETE FROM famtask_families WHERE code=?")->execute([$fc]);
+            $pdo->prepare("DELETE FROM famtask_ical_events WHERE family_code=?")->execute([$fc]);
+        } else {
+            $pdo->exec("DELETE FROM famtask_data");
+            $pdo->exec("DELETE FROM famtask_stats");
+            $pdo->exec("DELETE FROM famtask_families");
+            $pdo->exec("DELETE FROM famtask_ical_events");
+        }
+
+        // Meta (Upsert)
+        $meta = $backup['meta'] ?? [];
+        $stMeta = $pdo->prepare("INSERT INTO famtask_meta (meta_key,meta_value) VALUES (?,?) ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)");
+        foreach ($meta as $m) {
+            if (!is_array($m)) continue;
+            $key = (string)($m['meta_key'] ?? '');
+            $val = isset($m['meta_value']) ? (string)$m['meta_value'] : '';
+            if ($key === '') continue;
+            $stMeta->execute([$key, $val]);
+        }
+
+        // Familien (Upsert)
+        $families = $backup['families'] ?? [];
+        $stFam = $pdo->prepare("INSERT INTO famtask_families (code,name,created_at) VALUES (?,?,?) ON DUPLICATE KEY UPDATE name=VALUES(name), created_at=VALUES(created_at)");
+        foreach ($families as $f) {
+            if (!is_array($f)) continue;
+            $code = (string)($f['code'] ?? '');
+            if ($code === '') continue;
+            $name = (string)($f['name'] ?? '');
+            $createdAt = (string)($f['created_at'] ?? date('Y-m-d H:i:s'));
+            $stFam->execute([$code, $name, $createdAt]);
+        }
+
+        // Daten
+        $data = $backup['data'] ?? [];
+        $stData = $pdo->prepare("INSERT INTO famtask_data (family_code,data_key,data_value,updated_at) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE data_value=VALUES(data_value), updated_at=VALUES(updated_at)");
+        foreach ($data as $row) {
+            if (!is_array($row)) continue;
+            $fc = (string)($row['family_code'] ?? '');
+            $k = (string)($row['data_key'] ?? '');
+            if ($fc === '' || $k === '') continue;
+            $v = isset($row['data_value']) ? (string)$row['data_value'] : null;
+            $upd = (string)($row['updated_at'] ?? date('Y-m-d H:i:s'));
+            $stData->execute([$fc, $k, $v, $upd]);
+        }
+
+        // Stats
+        $stats = $backup['stats'] ?? [];
+        $stStats = $pdo->prepare("INSERT INTO famtask_stats (family_code,day,child_id,child_name,event_type,ref_id,ref_label,minutes,created_at)
+            VALUES (?,?,?,?,?,?,?,?,?)");
+        foreach ($stats as $row) {
+            if (!is_array($row)) continue;
+            $fc = (string)($row['family_code'] ?? '');
+            if ($fc === '') continue;
+            $stStats->execute([
+                $fc,
+                (string)($row['day'] ?? ''),
+                (string)($row['child_id'] ?? ''),
+                (string)($row['child_name'] ?? ''),
+                (string)($row['event_type'] ?? 'task_done'),
+                (string)($row['ref_id'] ?? ''),
+                isset($row['ref_label']) ? (string)$row['ref_label'] : null,
+                intval($row['minutes'] ?? 0),
+                (string)($row['created_at'] ?? date('Y-m-d H:i:s'))
+            ]);
+        }
+
+        // iCal Events
+        $ical = $backup['ical_events'] ?? [];
+        $stIcal = $pdo->prepare("INSERT INTO famtask_ical_events
+            (family_code,uid,title,date_start,date_end,time_start,description,source_url,imported_at)
+            VALUES (?,?,?,?,?,?,?,?,?)
+            ON DUPLICATE KEY UPDATE
+                title=VALUES(title),
+                date_start=VALUES(date_start),
+                date_end=VALUES(date_end),
+                time_start=VALUES(time_start),
+                description=VALUES(description),
+                source_url=VALUES(source_url),
+                imported_at=VALUES(imported_at)");
+        foreach ($ical as $row) {
+            if (!is_array($row)) continue;
+            $fc = (string)($row['family_code'] ?? '');
+            $uid = (string)($row['uid'] ?? '');
+            if ($fc === '' || $uid === '') continue;
+            $stIcal->execute([
+                $fc,
+                $uid,
+                isset($row['title']) ? (string)$row['title'] : null,
+                (string)($row['date_start'] ?? date('Y-m-d')),
+                isset($row['date_end']) ? $row['date_end'] : null,
+                isset($row['time_start']) ? (string)$row['time_start'] : null,
+                isset($row['description']) ? (string)$row['description'] : null,
+                isset($row['source_url']) ? (string)$row['source_url'] : null,
+                (string)($row['imported_at'] ?? date('Y-m-d H:i:s'))
+            ]);
+        }
+
+        $pdo->commit();
+
+        jsonOut([
+            'ok' => true,
+            'msg' => 'Backup erfolgreich wiederhergestellt',
+            'scope' => $scope,
+            'app_version' => $backup['app_version'] ?? null,
+            'db_version' => $backup['db_version'] ?? null
+        ]);
+    } catch (PDOException $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        http_response_code(500);
+        jsonOut(['ok'=>false,'msg'=>'Restore fehlgeschlagen: '.$e->getMessage()]);
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 //  STATS  (JSON für Admin-Seite)
 // ══════════════════════════════════════════════════════════════════════════════
 function handleStats(PDO $pdo) {
@@ -678,6 +999,7 @@ function showAdminPage(string $tab = ''): void {
       <div class="tab <?= $tab==='ical'?'active':'' ?>" data-tab="ical">📅 Kalender</div>
       <div class="tab <?= $tab==='stats'?'active':'' ?>" data-tab="stats">📈 Statistiken</div>
       <div class="tab <?= $tab==='update'?'active':'' ?>" data-tab="update">🔄 Update</div>
+      <div class="tab <?= $tab==='backup'?'active':'' ?>" data-tab="backup">🧳 Backup</div>
       <div class="tab <?= $tab==='reinstall'?'active':'' ?>" data-tab="reinstall">⚙️ Konfig</div>
     <?php endif; ?>
   </div>
@@ -774,6 +1096,37 @@ function showAdminPage(string $tab = ''): void {
     <button class="btn btn-pri" onclick="doReinstall()">💾 Verbindung speichern</button>
     <div class="msg" id="reinstall-msg"></div>
   </div>
+
+  <div class="section <?= $tab==='backup'?'active':'' ?>" id="tab-backup">
+    <h3>Backup & Restore</h3>
+    <div class="warn-box" style="margin-top:0">
+      Dieses Backup enthält Familien- und Aufgabendaten. Nutze es nur lokal und sichere sensible Dateien.
+    </div>
+
+    <label>Scope</label>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.65);font-weight:800">
+        <input type="radio" name="backup-scope" value="all" checked/>
+        Alle Familien
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.65);font-weight:800">
+        <input type="radio" name="backup-scope" value="family"/>
+        Nur eine Familie
+      </label>
+    </div>
+    <label style="margin-top:10px">Familiencode (nur bei “Nur eine Familie”)</label>
+    <input id="backup-fc" placeholder="z.B. FAM001" value="FAM001"/>
+
+    <button class="btn btn-sec" onclick="downloadBackup()" style="margin-top:14px">⬇️ Backup herunterladen</button>
+    <div class="msg" id="backup-msg-download" style="margin-top:14px"></div>
+
+    <hr style="border:none;border-top:1px solid rgba(255,255,255,.07);margin:18px 0">
+
+    <label>Backup-Datei auswählen (JSON)</label>
+    <input id="backup-file" type="file" accept="application/json"/>
+    <button class="btn btn-pri" onclick="restoreBackup()" style="margin-top:14px">⏫ Backup wiederherstellen</button>
+    <div class="msg" id="backup-msg" style="margin-top:14px"></div>
+  </div>
   <?php endif; ?>
 </div>
 
@@ -786,6 +1139,10 @@ function setLoading(btn,loading){if(loading){btn._orig=btn.innerHTML;btn.innerHT
 async function doInstall(){const btn=event.currentTarget;const d={host:document.getElementById('i-host').value,port:parseInt(document.getElementById('i-port').value)||3306,db:document.getElementById('i-db').value,user:document.getElementById('i-user').value,pass:document.getElementById('i-pass').value};setLoading(btn,true);try{const r=await fetch('api.php?action=install',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});const res=await r.json();showMsg('install-msg',res.ok,res.msg);if(res.ok)setTimeout(()=>location.reload(),1500);}catch(e){showMsg('install-msg',false,'Netzwerkfehler: '+e.message);}setLoading(btn,false);}
 async function doUpdate(){const btn=event.currentTarget;setLoading(btn,true);try{const r=await fetch('api.php?action=update',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});const d=await r.json();showMsg('update-msg',d.ok,d.msg);if(d.ok)setTimeout(()=>location.reload(),2000);}catch(e){showMsg('update-msg',false,'Netzwerkfehler: '+e.message);}setLoading(btn,false);}
 async function doReinstall(){const btn=event.currentTarget;const d={host:document.getElementById('r-host').value,port:parseInt(document.getElementById('r-port').value)||3306,db:document.getElementById('r-db').value,user:document.getElementById('r-user').value,pass:document.getElementById('r-pass').value};setLoading(btn,true);try{const r=await fetch('api.php?action=install',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});const res=await r.json();showMsg('reinstall-msg',res.ok,res.msg);if(res.ok)setTimeout(()=>location.reload(),1500);}catch(e){showMsg('reinstall-msg',false,'Netzwerkfehler: '+e.message);}setLoading(btn,false);}
+
+async function downloadBackup(){const btn=event.currentTarget;const scope=(document.querySelector('input[name=\"backup-scope\"]:checked')?.value)||'all';const fc=(document.getElementById('backup-fc')?.value||'').trim();const msgId='backup-msg-download';setLoading(btn,true);try{let url='api.php?action=backup&scope='+encodeURIComponent(scope);if(scope==='family'){if(!fc){showMsg(msgId,false,'Bitte Familiencode angeben');setLoading(btn,false);return;}url+='&fc='+encodeURIComponent(fc);}const r=await fetch(url,{headers:{'Accept':'application/json'}});if(!r.ok){let t='';try{t=await r.text();}catch(e){}showMsg(msgId,false,'Backup fehlgeschlagen: '+t);setLoading(btn,false);return;}const blob=await r.blob();let filename='famtask-backup.json';const cd=r.headers.get('Content-Disposition');if(cd&&cd.includes('filename=')){filename=cd.split('filename=')[1].trim();filename=filename.replace(/^\"|\"$/g,'');}const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();showMsg(msgId,true,'Backup heruntergeladen.');}catch(e){showMsg(msgId,false,'Fehler: '+e.message);}setLoading(btn,false);}
+
+async function restoreBackup(){const btn=event.currentTarget;const file=document.getElementById('backup-file').files[0];if(!file){showMsg('backup-msg',false,'Bitte Backup-Datei wählen');return;}setLoading(btn,true);try{const fd=new FormData();fd.append('backup',file);const r=await fetch('api.php?action=restore',{method:'POST',body:fd});let d=null;try{d=await r.json();}catch(e){}if(!d){showMsg('backup-msg',false,'Restore fehlgeschlagen (keine JSON-Antwort).');setLoading(btn,false);return;}showMsg('backup-msg',d.ok,d.msg||'');if(d.ok)setTimeout(()=>location.reload(),1500);}catch(e){showMsg('backup-msg',false,'Fehler: '+e.message);}setLoading(btn,false);}
 
 // Familien
 async function loadFamilies(){document.getElementById('fam-loading').style.display='block';document.getElementById('fam-list').innerHTML='';try{const r=await fetch('api.php?action=families',{headers:{'Accept':'application/json'}});const d=await r.json();document.getElementById('fam-loading').style.display='none';if(!d.ok||!d.families.length){document.getElementById('fam-list').innerHTML='<p style="color:rgba(255,255,255,.3);font-size:13px">Noch keine Familien.</p>';return;}document.getElementById('fam-list').innerHTML=d.families.map(f=>`<div style="background:#0D0E1A;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-weight:800;color:#fff;font-size:13px">${f.name||'Unbenannt'}</div><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">${f.data_rows} Datensätze · seit ${new Date(f.created_at).toLocaleDateString('de-CH')}</div></div><code style="font-size:15px;letter-spacing:2px">${f.code}</code></div>`).join('');}catch(e){document.getElementById('fam-loading').style.display='none';}}

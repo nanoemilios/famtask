@@ -95,3 +95,4 @@ Mit `dev.sh`:
 - `.famtask_cfg.php` nicht committen (enthält Zugangsdaten)
 - Für öffentliche Repos keine produktiven Passwörter verwenden
 - SQL-Dumps vor dem Upload auf persönliche Daten prüfen/anonymisieren
+- Backup-Dateien (JSON) enthalten ebenfalls sensible Familiendaten und sollten vor einem Upload geprüft/ggf. anonymisiert werden.

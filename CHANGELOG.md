@@ -19,6 +19,11 @@ Das Format orientiert sich an "Keep a Changelog".
 
 ---
 
+## [v1.2.1] - 2026-03-25
+
+### Added
+- Backup/Restore via `api.php?action=backup` und `api.php?action=restore` (Admin-Tab, JSON-Export/Import).
+
 ## Vorlage fuer naechste Releases
 
 ```md
