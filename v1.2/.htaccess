@@ -1,0 +1,4 @@
+<Files ".famtask_cfg.php">
+  Order allow,deny
+  Deny from all
+</Files>

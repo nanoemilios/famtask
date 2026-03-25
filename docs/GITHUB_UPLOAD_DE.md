@@ -18,9 +18,22 @@ Im Projektordner:
 
 ```bash
 cd C:\Users\nano\OneDrive\CODDING\famtask
+git status
+```
+
+Wenn `git status` meldet, dass noch **kein** Repository vorhanden ist, dann:
+
+```bash
 git init
 git add .
 git commit -m "Initial commit: FamTask v1.2 + docs"
+```
+
+Wenn bereits ein Repository existiert, stattdessen normal committen:
+
+```bash
+git add .
+git commit -m "Update docs/readme"
 ```
 
 ## 3) GitHub-Repo erstellen
@@ -35,6 +48,12 @@ git commit -m "Initial commit: FamTask v1.2 + docs"
 git branch -M main
 git remote add origin <DEIN_GITHUB_REPO_URL>
 git push -u origin main
+```
+
+Wenn `origin` bereits existiert, URL aktualisieren:
+
+```bash
+git remote set-url origin <DEIN_GITHUB_REPO_URL>
 ```
 
 Beispiel HTTPS:

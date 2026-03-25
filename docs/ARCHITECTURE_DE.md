@@ -6,6 +6,7 @@ FamTask v1.2 ist eine einfache Web-App mit:
 
 - Frontend: `v1.2/index.html`
 - Backend/API + Admin/Installer: `v1.2/api.php`
+- Webserver-Regeln: `v1.2/.htaccess`
 - Datenbank: MariaDB/MySQL
 
 ## Backend-API (Auszug)
@@ -32,4 +33,4 @@ Lokale Konfigurationsdatei:
 
 - `.famtask_cfg.php` (DB-Host, Port, Datenbank, User, Passwort)
 
-Diese Datei ist sensitiv und sollte nie ins öffentliche Repository.
+Diese Datei ist sensitiv, liegt lokal unter `v1.2/.famtask_cfg.php` und sollte nie ins öffentliche Repository.

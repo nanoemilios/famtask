@@ -2,11 +2,11 @@
 
 FamTask ist eine lokale Familien-Task-App mit HTML-Frontend und PHP-Backend (MariaDB).
 
-Dieses Repository enthält mehrere Entwicklungsstände. Die **aktuelle Version** ist:
+Die **aktuelle Version** liegt in:
 
 - `v1.2`
 
-Ältere Ordner (`v0.1.9`, `v1.0`, `v1.1`) sind historische Versionen.
+Historische Versionen wurden aus dem aktiven Projektstand entfernt und sind nicht Teil des regulären Workflows.
 
 ## Features (v1.2)
 
@@ -23,11 +23,11 @@ famtask/
 ├─ v1.2/                 # aktuelle Version
 │  ├─ index.html         # Frontend
 │  ├─ api.php            # Backend + Installer + API
+│  ├─ .htaccess          # Apache-Regeln
 │  ├─ famtask.sql        # SQL-Dump (optional / lokal)
-│  └─ ...
-├─ v1.1/                 # alte Version
-├─ v1.0/                 # alte Version
-└─ v0.1.9/               # alte Version
+│  └─ .famtask_cfg.php   # lokale DB-Konfig (nicht committen)
+├─ docs/                 # Projektdokumentation
+└─ README.md
 ```
 
 ## Voraussetzungen
@@ -51,6 +51,8 @@ Wenn deine Installation bereits über Docker lokal läuft (z. B. `http://localho
 
 - GitHub Upload: `docs/GITHUB_UPLOAD_DE.md`
 - Lokales Docker-Setup (`devenv`): `docs/LOCAL_SETUP_DEVENV_DE.md`
+- Architektur/API-Überblick: `docs/ARCHITECTURE_DE.md`
+- Changelog: `CHANGELOG.md`
 
 ## Lizenz
 
