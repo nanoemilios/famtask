@@ -612,6 +612,9 @@ function handleBackup(PDO $pdo): void {
         $familyCode = $rawFc;
     }
 
+    // Falls Tabellen bei Alt-Installs fehlen: sicherstellen.
+    ensureBackupTables($pdo);
+
     $exportedAt = date('c');
     $dbVer = getDbVersion($pdo);
 
