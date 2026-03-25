@@ -56,10 +56,11 @@ Typische Werte im Docker-Setup:
 - Port: `3306` (interner Container-Port)
 - Datenbank: `famtask`
 - User: `famtask`
-- Passwort: `famtask123`
+- Passwort: `CHANGE_ME` (nur Beispielwert)
 
 Wichtig:
 
+- Vor Ort die Datei `v1.2/.famtask_cfg.example.php` nach `.famtask_cfg.php` kopieren und Werte anpassen.
 - Von der App aus immer `mariadb:3306` nutzen (nicht `localhost:3307`)
 - `localhost:3307` ist nur für externe DB-Tools auf deinem Rechner
 

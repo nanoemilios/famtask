@@ -32,5 +32,6 @@ Die App-Version ist in `APP_VERSION` definiert und Migrationen sind in `$MIGRATI
 Lokale Konfigurationsdatei:
 
 - `.famtask_cfg.php` (DB-Host, Port, Datenbank, User, Passwort)
+- Beispiel: `v1.2/.famtask_cfg.example.php` (für GitHub, ohne echte Zugangsdaten)
 
-Diese Datei ist sensitiv, liegt lokal unter `v1.2/.famtask_cfg.php` und sollte nie ins öffentliche Repository.
+`v1.2/.famtask_cfg.php` ist sensitiv und sollte nie ins öffentliche Repository.
