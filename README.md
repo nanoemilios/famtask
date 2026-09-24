@@ -60,12 +60,16 @@ Familien-Aufgaben-App mit HTML-Frontend (React) und PHP-Backend (MariaDB).
 Lade den [Web-Installer](https://github.com/nanoemilios/famtask_installer) herunter und folge den Anweisungen.
 
 ### Option 2: Docker (empfohlen für VPS/Proxmox)
-Nutze das [Docker-Setup](https://github.com/nanoemilios/famtask_docker):
+Nutze das [Docker-Setup](https://github.com/nanoemilios/famtask_docker) mit dem [Proxmox-Installer](https://github.com/nanoemilios/famtask_proxmox):
 
 ```bash
-git clone https://github.com/nanoemilios/famtask_docker.git
-cd famtask_docker
-bash proxmox-install-oneliner.sh
+# One-Liner (empfohlen):
+bash <(curl -fsSL https://raw.githubusercontent.com/nanoemilios/famtask_proxmox/main/proxmox-install-oneliner.sh)
+
+# Oder manuell:
+git clone https://github.com/nanoemilios/famtask_proxmox.git
+cd famtask_proxmox
+bash proxmox-install.sh
 ```
 
 ### Option 3: Manuell
