@@ -1,0 +1,24 @@
+# FamTask App - .gitignore
+
+# Konfiguration (sensitiv!)
+.famtask_cfg.php
+
+# Hochgeladene Audios
+audio/*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temp
+*.tmp
+*.temp

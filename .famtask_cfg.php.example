@@ -1,0 +1,7 @@
+<?php if(!defined('FAMTASK'))die('403'); return array (
+  'host' => 'localhost',
+  'port' => 3306,
+  'db' => 'famtask',
+  'user' => 'famtask',
+  'pass' => 'dein_passwort_hier',
+); ?>

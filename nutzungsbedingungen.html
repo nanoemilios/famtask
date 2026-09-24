@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title data-i18n="legal.terms.title">Nutzungsbedingungen – FamTask</title>
+  <meta name="theme-color" content="#0D0E1A"/>
+  <link rel="stylesheet" href="vendor/fonts/fonts.css"/>
+  <script src="i18n.js"></script>
+  <script>function contactEmail(){return'info@'+window.location.hostname}</script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { font-family: 'Nunito', sans-serif; background: #0D0E1A; color: #fff; line-height: 1.7; }
+    .header { background: linear-gradient(180deg, #161728, #111220); border-bottom: 1.5px solid rgba(255,255,255,0.06); padding: 16px 20px; position: sticky; top: 0; z-index: 100; }
+    .header-content { max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .logo { font-family: 'Fredoka One', sans-serif; font-size: 24px; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .logo-text { background: linear-gradient(135deg, #FF6B6B, #FFE66D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 900; }
+    .back-link { color: rgba(255,255,255,0.6); text-decoration: none; font-weight: 700; font-size: 14px; white-space: nowrap; transition: color 0.3s; }
+    .back-link:hover { color: #FF6B6B; }
+    .lang-switch { background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 6px 10px; color: rgba(255,255,255,0.7); font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; outline: none; }
+    .lang-switch option { background: #161728; color: #fff; }
+    .page { max-width: 900px; margin: 0 auto; padding: 60px 24px 100px; }
+    h1 { font-family: 'Fredoka One', sans-serif; font-size: 36px; margin-bottom: 40px; background: linear-gradient(135deg, #FF6B6B, #FFB347); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    h2 { font-size: 20px; font-weight: 800; margin: 32px 0 12px; color: #FFE66D; }
+    p, li { font-size: 15px; color: rgba(255,255,255,0.7); margin-bottom: 10px; }
+    ul { padding-left: 20px; margin-bottom: 16px; }
+    li { margin-bottom: 6px; }
+    strong { color: rgba(255,255,255,0.9); }
+    .footer-text { font-size: 12px; color: rgba(255,255,255,0.25); text-align: center; padding: 20px; border-top: 1.5px solid rgba(255,255,255,0.06); }
+    @media (max-width: 768px) { h1 { font-size: 28px; } .page { padding: 40px 18px 80px; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="../index.html" class="logo"><span class="logo-text">FamTask</span> <span style="font-size:16px">✨</span></a>
+      <div style="display:flex;align-items:center;gap:12px">
+        <select class="lang-switch" onchange="switchLang(this.value)">
+          <option value="de">DE</option>
+          <option value="en">EN</option>
+          <option value="es">ES</option>
+          <option value="fr">FR</option>
+          <option value="it">IT</option>
+          <option value="pt">PT</option>
+          <option value="zh">中文</option>
+          <option value="ar">العربية</option>
+          <option value="hi">हिन्दी</option>
+          <option value="ru">RU</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="tr">TR</option>
+          <option value="pl">PL</option>
+          <option value="nl">NL</option>
+          <option value="id">ID</option>
+          <option value="vi">VI</option>
+          <option value="bn">বাংলা</option>
+          <option value="th">ไทย</option>
+        </select>
+        <a href="../index.html" class="back-link" data-i18n="legal.back">← Zurück</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="page">
+    <h1 data-i18n="legal.terms.h1">Nutzungsbedingungen</h1>
+
+    <p><strong data-i18n="legal.terms.status">Stand: Juli 2026</strong></p>
+
+    <h2 data-i18n="legal.terms.s1">1. Geltungsbereich</h2>
+    <p data-i18n="legal.terms.s1_text">Diese Nutzungsbedingungen regeln die Verwendung der Software FamTask (im Folgenden "die App"), die als Open-Source-Anwendung unter der MIT-Lizenz bereitgestellt wird. Mit der Nutzung der App stimmst du diesen Bedingungen zu.</p>
+
+    <h2 data-i18n="legal.terms.s2">2. Beschreibung der Leistung</h2>
+    <p data-i18n="legal.terms.s2_intro">FamTask ist eine Familienaufgaben-App mit folgenden Kernfunktionen:</p>
+    <ul>
+      <li data-i18n="legal.terms.s2_l1">Verwaltung von Aufgaben, Belohnungen und Strafen für Kinder</li>
+      <li data-i18n="legal.terms.s2_l2">Medienzeit-Limits und Timer</li>
+      <li data-i18n="legal.terms.s2_l3">Familien-Kalender mit Terminen und Wiederholungen</li>
+      <li data-i18n="legal.terms.s2_l4">Pädagogische Lernspiele</li>
+      <li data-i18n="legal.terms.s2_l5">Jukebox / Audio-Player</li>
+      <li data-i18n="legal.terms.s2_l6">Statistiken und Backups</li>
+    </ul>
+    <p data-i18n="legal.terms.s2_outro">Die App wird als "Open Source" unter der MIT-Lizenz zur Verfügung gestellt. Sie kann selbst gehostet oder bei einem Drittanbieter betrieben werden.</p>
+
+    <h2 data-i18n="legal.terms.s3">3. Haftungsausschluss</h2>
+    <p data-i18n="legal.terms.s3_intro">Die Software wird "wie besehen" ohne jegliche Gewährleistung bereitgestellt. Der Autor haftet nicht für:</p>
+    <ul>
+      <li data-i18n="legal.terms.s3_l1">Datenverlust durch fehlerhafte Konfiguration, Bedienung oder Serverausfälle</li>
+      <li data-i18n="legal.terms.s3_l2">Schäden, die durch unsachgemäße Nutzung der App entstehen</li>
+      <li data-i18n="legal.terms.s3_l3">Die Verfügbarkeit oder Funktionstüchtigkeit der App bei Selbsthosting</li>
+      <li data-i18n="legal.terms.s3_l4">Die Richtigkeit von Timer-Funktionen, Berechnungen oder Spielergebnissen</li>
+    </ul>
+    <p data-i18n="legal.terms.s3_outro">Es wird empfohlen, regelmäßig Backups der Daten zu erstellen (integrierte Backup-Funktion).</p>
+
+    <h2 data-i18n="legal.terms.s4">4. Pflichten der Nutzer</h2>
+    <ul>
+      <li data-i18n="legal.terms.s4_l1">Du bist für die Sicherheit deines Servers und deiner Zugangsdaten selbst verantwortlich.</li>
+      <li data-i18n="legal.terms.s4_l2">Du darfst die App nicht nutzen, um gegen geltendes Recht zu verstoßen.</li>
+      <li data-i18n="legal.terms.s4_l3">Bei der Erfassung von Daten Minderjähriger stellst du sicher, dass du die erforderliche Einwilligung der Erziehungsberechtigten hast.</li>
+    </ul>
+
+    <h2 data-i18n="legal.terms.s5">5. Datensicherheit</h2>
+    <p data-i18n="legal.terms.s5_intro">Die Sicherheit deiner Daten hängt maßgeblich von deiner eigenen Server-Konfiguration ab. Der Autor empfiehlt:</p>
+    <ul>
+      <li data-i18n="legal.terms.s5_l1">Verwendung von HTTPS im Produktivbetrieb</li>
+      <li data-i18n="legal.terms.s5_l2">Regelmäßige Datenbank-Backups</li>
+      <li data-i18n="legal.terms.s5_l3">Starke Passwörter für die Admin-PIN und ggf. den Datenbankzugriff</li>
+      <li data-i18n="legal.terms.s5_l4">Zugriffsbeschränkung auf den Server</li>
+    </ul>
+
+    <h2 data-i18n="legal.terms.s6">6. Änderungen der Bedingungen</h2>
+    <p data-i18n="legal.terms.s6_text">Diese Nutzungsbedingungen können jederzeit geändert werden. Die aktuelle Version ist immer auf dieser Seite einsehbar. Bei fortgesetzter Nutzung der App nach Änderungen gelten die neuen Bedingungen als akzeptiert.</p>
+
+    <h2 data-i18n="legal.terms.s7">7. Anwendbares Recht</h2>
+    <p data-i18n="legal.terms.s7_text">Es gilt das Recht der Schweiz. Erfüllungsort ist der Wohnsitz des Autors.</p>
+
+    <h2 data-i18n="legal.terms.s8">8. Kontakt</h2>
+    <p data-i18n="legal.terms.s8_text">Bei Fragen zu diesen Nutzungsbedingungen wende dich bitte an:<br/>
+      <a href="#" class="email-link" style="color:#4ECDC4">info@domain</a></p>
+  </div>
+
+  <div class="footer-text" data-i18n="legal.footer">FamTask v1.4.0 · © 2024-2026 albertocosta.info</div>
+
+  <script>
+    (function() {
+      var e = contactEmail();
+      document.querySelectorAll('.email-link').forEach(function(el) { el.href = 'mailto:' + e; el.textContent = e; });
+    })();
+    (function() {
+      var saved = (function(){try{return localStorage.getItem('ft_lang');}catch(e){return null;}})() || 'de';
+      window._lang = saved; document.documentElement.lang = saved;
+      function translatePage() {
+        document.querySelectorAll('[data-i18n]').forEach(function(el) {
+          var key = el.getAttribute('data-i18n');
+          var val = t(key);
+          if (val !== key) el.innerHTML = val;
+        });
+        var sel = document.querySelector('.lang-switch');
+        if (sel) sel.value = window._lang;
+      }
+      function loadAndTranslate(lang) {
+        window._lang = lang;
+        var script = document.createElement('script');
+        script.src = 'lang/' + lang + '.js';
+        script.onload = function() { translatePage(); };
+        document.head.appendChild(script);
+      }
+      loadAndTranslate(saved);
+      window.switchLang = function(lang) {
+        try { localStorage.setItem('ft_lang', lang); } catch(e) {}
+        location.reload();
+      };
+    })();
+  </script>
+</body>
+</html>

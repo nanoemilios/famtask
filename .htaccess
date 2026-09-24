@@ -1,0 +1,13 @@
+# FamTask – Apache-Konfiguration
+# Kompatibel mit Apache 2.4 (aktueller Standard aller gängigen Webhoster).
+# Hinweis für nginx-Hoster: .htaccess wird dort ignoriert. Die Konfigdatei ist
+# zusätzlich per PHP-Guard geschützt (Direktzugriff ohne FAMTASK-Define → 403).
+
+Options -Indexes
+DirectoryIndex index.html index.php
+
+# Datenbank-Konfiguration niemals ausliefern
+# (Schutz auch dann, wenn PHP auf dem Hoster nicht ausgeführt wird)
+<FilesMatch "^\.famtask_cfg\.php$">
+  Require all denied
+</FilesMatch>

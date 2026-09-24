@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title data-i18n="legal.privacy.title">Datenschutz – FamTask</title>
+  <meta name="theme-color" content="#0D0E1A"/>
+  <link rel="stylesheet" href="vendor/fonts/fonts.css"/>
+  <script src="i18n.js"></script>
+  <script>function contactEmail(){return'info@'+window.location.hostname}</script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { font-family: 'Nunito', sans-serif; background: #0D0E1A; color: #fff; line-height: 1.7; }
+    .header { background: linear-gradient(180deg, #161728, #111220); border-bottom: 1.5px solid rgba(255,255,255,0.06); padding: 16px 20px; position: sticky; top: 0; z-index: 100; }
+    .header-content { max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .logo { font-family: 'Fredoka One', sans-serif; font-size: 24px; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .logo-text { background: linear-gradient(135deg, #FF6B6B, #FFE66D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 900; }
+    .back-link { color: rgba(255,255,255,0.6); text-decoration: none; font-weight: 700; font-size: 14px; white-space: nowrap; transition: color 0.3s; }
+    .back-link:hover { color: #FF6B6B; }
+    .lang-switch { background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 6px 10px; color: rgba(255,255,255,0.7); font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; outline: none; }
+    .lang-switch option { background: #161728; color: #fff; }
+    .page { max-width: 900px; margin: 0 auto; padding: 60px 24px 100px; }
+    h1 { font-family: 'Fredoka One', sans-serif; font-size: 36px; margin-bottom: 40px; background: linear-gradient(135deg, #FF6B6B, #FFB347); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    h2 { font-size: 20px; font-weight: 800; margin: 32px 0 12px; color: #FFE66D; }
+    p, li { font-size: 15px; color: rgba(255,255,255,0.7); margin-bottom: 10px; }
+    ul { padding-left: 20px; margin-bottom: 16px; }
+    li { margin-bottom: 6px; }
+    strong { color: rgba(255,255,255,0.9); }
+    .footer-text { font-size: 12px; color: rgba(255,255,255,0.25); text-align: center; padding: 20px; border-top: 1.5px solid rgba(255,255,255,0.06); }
+    @media (max-width: 768px) { h1 { font-size: 28px; } .page { padding: 40px 18px 80px; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="../index.html" class="logo"><span class="logo-text">FamTask</span> <span style="font-size:16px">✨</span></a>
+      <div style="display:flex;align-items:center;gap:12px">
+        <select class="lang-switch" onchange="switchLang(this.value)">
+          <option value="de">DE</option>
+          <option value="en">EN</option>
+          <option value="es">ES</option>
+          <option value="fr">FR</option>
+          <option value="it">IT</option>
+          <option value="pt">PT</option>
+          <option value="zh">中文</option>
+          <option value="ar">العربية</option>
+          <option value="hi">हिन्दी</option>
+          <option value="ru">RU</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="tr">TR</option>
+          <option value="pl">PL</option>
+          <option value="nl">NL</option>
+          <option value="id">ID</option>
+          <option value="vi">VI</option>
+          <option value="bn">বাংলা</option>
+          <option value="th">ไทย</option>
+        </select>
+        <a href="../index.html" class="back-link" data-i18n="legal.back">← Zurück</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="page">
+    <h1 data-i18n="legal.privacy.h1">Datenschutzerklärung</h1>
+
+    <p><strong data-i18n="legal.privacy.status">Stand: Juli 2026</strong></p>
+
+    <p data-i18n="legal.privacy.intro">Der Schutz deiner personenbezogenen Daten ist uns wichtig. Diese Datenschutzerklärung informiert darüber, welche Daten bei der Nutzung von FamTask erhoben, verarbeitet und genutzt werden.</p>
+
+    <h2 data-i18n="legal.privacy.s1">1. Verantwortlicher</h2>
+    <p><span data-i18n="legal.privacy.s1_name">Alberto Costa</span><br/>
+      <a href="#" class="email-link" style="color:#4ECDC4">info@domain</a><br/>
+      <span data-i18n="legal.privacy.s1_website">Website:</span> <a href="https://albertocosta.info" style="color:#4ECDC4" target="_blank">albertocosta.info</a>
+    </p>
+
+    <h2 data-i18n="legal.privacy.s2">2. Welche Daten werden erhoben?</h2>
+    <p><strong data-i18n="legal.privacy.s2a">2.1 Bei Nutzung der App (my.*)</strong></p>
+    <ul>
+      <li data-i18n="legal.privacy.s2a_l1">Von dir eingegebene Familiendaten: Familienname, Namen der Kinder, Geburtsdaten, Emoji-Auswahl, Farben</li>
+      <li data-i18n="legal.privacy.s2a_l2">Von dir erstellte Aufgaben, Strafen, Medientypen und Termine</li>
+      <li data-i18n="legal.privacy.s2a_l3">Erledigungsstatus, verdiente Minuten, Timer-Einstellungen und Spielergebnisse</li>
+      <li data-i18n="legal.privacy.s2a_l4">Hochgeladene Bilder (Kinderfotos, Aufgabenbilder) und Audiodateien</li>
+      <li data-i18n="legal.privacy.s2a_l5">iCal-Import-Daten (nur lokal verarbeitet, nicht dauerhaft gespeichert)</li>
+    </ul>
+    <p><strong data-i18n="legal.privacy.s2b">2.2 Bei Nutzung der Landingpage (index.html)</strong></p>
+    <ul>
+      <li data-i18n="legal.privacy.s2b_l1">Keine personenbezogenen Daten werden erhoben. Es werden keine Cookies gesetzt.</li>
+      <li data-i18n="legal.privacy.s2b_l2">Es wird eine Spracheinstellung im lokalen Speicher (localStorage) des Browsers abgelegt.</li>
+    </ul>
+
+    <h2 data-i18n="legal.privacy.s3">3. Zweck der Datenverarbeitung</h2>
+    <p data-i18n="legal.privacy.s3_intro">Die Daten dienen ausschließlich dem Betrieb der Familienaufgaben-App:</p>
+    <ul>
+      <li data-i18n="legal.privacy.s3_l1">Bereitstellung der Aufgaben-, Medienzeit- und Kalenderfunktionen</li>
+      <li data-i18n="legal.privacy.s3_l2">Synchronisation zwischen verschiedenen Geräten der Familie</li>
+      <li data-i18n="legal.privacy.s3_l3">Speicherung von Einstellungen und Spielfortschritten</li>
+      <li data-i18n="legal.privacy.s3_l4">Backup und Wiederherstellung auf Wunsch</li>
+    </ul>
+
+    <h2 data-i18n="legal.privacy.s4">4. Speicherung und Übermittlung</h2>
+    <ul>
+      <li data-i18n="legal.privacy.s4_l1">Die Daten werden auf einem MariaDB/MySQL-Server gespeichert, den du selbst betreibst oder der von einem von dir gewählten Hoster bereitgestellt wird.</li>
+      <li data-i18n="legal.privacy.s4_l2">Eine Weitergabe an Dritte erfolgt nicht.</li>
+      <li data-i18n="legal.privacy.s4_l3">Die Daten werden nicht für Analyse-, Werbe- oder Tracking-Zwecke genutzt.</li>
+    </ul>
+
+    <h2 data-i18n="legal.privacy.s5">5. Speicherdauer</h2>
+    <p data-i18n="legal.privacy.s5_text">Die Daten werden solange gespeichert, wie die App genutzt wird. Du kannst alle Daten jederzeit über die Admin-Einstellungen löschen. Bei Löschung der Familie werden alle zugehörigen Daten endgültig entfernt.</p>
+
+    <h2 data-i18n="legal.privacy.s6">6. Rechte der betroffenen Person</h2>
+    <p data-i18n="legal.privacy.s6_intro">Du hast das Recht:</p>
+    <ul>
+      <li data-i18n="legal.privacy.s6_l1">Auskunft über die gespeicherten Daten zu erhalten</li>
+      <li data-i18n="legal.privacy.s6_l2">Die Berichtigung unrichtiger Daten zu verlangen</li>
+      <li data-i18n="legal.privacy.s6_l3">Die Löschung deiner Daten zu verlangen</li>
+      <li data-i18n="legal.privacy.s6_l4">Die Einschränkung der Verarbeitung zu verlangen</li>
+      <li data-i18n="legal.privacy.s6_l5">Daten in einem maschinenlesbaren Format zu erhalten (Backup-Funktion)</li>
+    </ul>
+    <p data-i18n="legal.privacy.s6_contact">Wende dich dazu einfach an <a href="#" class="email-link" style="color:#4ECDC4">info@domain</a>.</p>
+
+    <h2 data-i18n="legal.privacy.s7">7. Dienste von Drittanbietern</h2>
+    <p data-i18n="legal.privacy.s7_intro">FamTask verwendet folgende externe Dienste:</p>
+    <ul>
+      <li data-i18n="legal.privacy.s7_l1"><strong>Schriftarten &amp; App-Skripte</strong> – werden lokal vom eigenen Server ausgeliefert (React, ReactDOM, Babel, Fonts). Es besteht keine Verbindung zu Google-Fonts- oder CDN-Servern.</li>
+      <li data-i18n="legal.privacy.s7_l2"><strong>MusicBrainz, iTunes, Deezer, YouTube, Bing</strong> – zur automatischen Suche von Album-Covern (optional, nur auf Wunsch).</li>
+      <li data-i18n="legal.privacy.s7_l3"><strong>Google Kalender (iCal)</strong> – nur wenn du eine Kalender-URL importierst.</li>
+    </ul>
+    <p data-i18n="legal.privacy.s7_note">Für die Datenverarbeitung dieser Dienste gelten die jeweiligen Datenschutzerklärungen der Anbieter.</p>
+
+    <h2 data-i18n="legal.privacy.s8">8. Lokaler Speicher (localStorage)</h2>
+    <p data-i18n="legal.privacy.s8_text">FamTask nutzt den localStorage des Browsers, um Einstellungen (z. B. Sprache, Family Code) und zwischengespeicherte Daten zu speichern. Diese Daten verlassen deinen Browser nicht und werden nicht an Dritte übermittelt.</p>
+
+    <h2 data-i18n="legal.privacy.s9">9. Kontakt</h2>
+    <p data-i18n="legal.privacy.s9_text">Bei Fragen zum Datenschutz erreichst du uns unter <a href="#" class="email-link" style="color:#4ECDC4">info@domain</a>.</p>
+  </div>
+
+  <div class="footer-text" data-i18n="legal.footer">FamTask v1.4.0 · © 2024-2026 albertocosta.info</div>
+
+  <script>
+    (function() {
+      var e = contactEmail();
+      document.querySelectorAll('.email-link').forEach(function(el) { el.href = 'mailto:' + e; el.textContent = e; });
+    })();
+    (function() {
+      var saved = (function(){try{return localStorage.getItem('ft_lang');}catch(e){return null;}})() || 'de';
+      window._lang = saved; document.documentElement.lang = saved;
+      function translatePage() {
+        document.querySelectorAll('[data-i18n]').forEach(function(el) {
+          var key = el.getAttribute('data-i18n');
+          var val = t(key);
+          if (val !== key) el.innerHTML = val;
+        });
+        var sel = document.querySelector('.lang-switch');
+        if (sel) sel.value = window._lang;
+      }
+      function loadAndTranslate(lang) {
+        window._lang = lang;
+        var script = document.createElement('script');
+        script.src = 'lang/' + lang + '.js';
+        script.onload = function() { translatePage(); };
+        document.head.appendChild(script);
+      }
+      loadAndTranslate(saved);
+      window.switchLang = function(lang) {
+        try { localStorage.setItem('ft_lang', lang); } catch(e) {}
+        location.reload();
+      };
+    })();
+  </script>
+</body>
+</html>

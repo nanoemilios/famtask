@@ -1,0 +1,10 @@
+{
+  "name": "FamTask",
+  "short_name": "FamTask",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0D0E1A",
+  "theme_color": "#0D0E1A",
+  "description": "Familienorganisation leicht gemacht"
+}
