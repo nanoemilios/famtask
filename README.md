@@ -2,13 +2,19 @@
 
 Familien-Aufgaben-App mit HTML-Frontend (React) und PHP-Backend (MariaDB).
 
-## Features (v1.4.0)
+## Features (v1.5.0)
 
 ### Aufgaben & Belohnungen
 - Aufgabenverwaltung für Kinder mit täglicher Wiederholung, Fälligkeitszeiten und Bild-Upload
 - Belohnungssystem: Minuten für erledigte Aufgaben sammeln
 - Strafenkatalog mit automatischer Minuten-Verrechnung & Live-Tracking (Fine Hits)
 - Zuweisung zu einzelnen Kindern oder mehreren
+
+### Sackgeld (CHF)
+- Kinder verdienen in Schweizer Franken, Beträge werden in Rappen als Integer gespeichert
+- Sparkonto mit getrenntem Guthaben und Wochenvergütung
+- Kontoauszug über alle Buchungen, negative Guthaben möglich
+- Kaufbuchungen: Guthaben gegen Medienzeit eintauschen
 
 ### Medienzeit-Verwaltung
 - Individuelle Limits pro Kind und Medientyp (TV, Tablet, Nintendo, eigene Typen)
@@ -29,14 +35,26 @@ Familien-Aufgaben-App mit HTML-Frontend (React) und PHP-Backend (MariaDB).
 - Minuten-Belohnungen & Bestenliste
 
 ### Jukebox / Audio-Player
-- Musik-/Hörspiel-Player nach Alben gruppiert
-- Persistent über alle Seiten (Mini-Player in der Navigationsleiste)
-- Automatisches Cover-Art-Fetching (MusicBrainz, iTunes)
-- Lokale Audios hochladbar
+- **Pro Kind personalisiert**: eigene Farbe, eigenes Album, eigener letzter Titel
+- Kind-Auswahl oben, waagerechtes Album-Cover-Carousel, schlanke Titelliste
+- **Favoriten je Kind** (Herz an jedem Titel, Reiter „Meine Lieder")
+- Schwebender Mini-Player mit Cover, Fortschritt und Vor/Zurück
+- Automatisches Cover-Art-Fetching (MusicBrainz, Cover Art Archive, iTunes)
+
+### Externe Musikquellen
+- Musik von **WebDAV, FTP/FTPS, HTTPS/S3** und **gemounteten Laufwerken**
+- Zwei Importmodi: **Kopieren** (offline verfügbar) oder **Verlinken** (Symlink, kein Speicherbedarf)
+- Wiederholte Importe überspringen unveränderte Dateien
+- Zugangsdaten bleiben ausschliesslich auf dem Server
+- Pfad-Traversal, `file://` und Cloud-Metadaten-Endpunkte werden abgewiesen
+
+> **SMB/CIFS und NFS:** PHP kann Netzwerkdateisysteme nicht selbst mounten.
+> Der Host mountet, Docker reicht durch – siehe [famtask_docker](https://github.com/nanoemilios/famtask_docker).
 
 ### Administration
-- Admin-PIN-Schutz (Cookie-basiert, 30 Tage)
+- Admin-PIN-Schutz
 - Familienverwaltung (erstellen/umbenennen/löschen)
+- Reiter „Musikquellen" mit Verbindungs-Test und Ordner-Ansicht
 - Globale Einstellungen & Admin-Panel via `api.php?action=admin`
 - Backup/Restore via `action=backup` / `action=restore`
 - Statistik-Endpunkte (`action=stats`)
@@ -50,9 +68,23 @@ Familien-Aufgaben-App mit HTML-Frontend (React) und PHP-Backend (MariaDB).
 
 ## Voraussetzungen
 
-- PHP 8.0+ mit PDO `pdo_mysql`
+- PHP 8.0+ mit `pdo_mysql` und `mbstring`
+- Für externe Musikquellen zusätzlich: `curl` (WebDAV, HTTPS/S3) und
+  `ftp` (FTP/FTPS) – im Docker-Image bereits enthalten
 - MariaDB/MySQL
 - Webserver (Apache/Nginx) oder Docker
+
+## Dateien
+
+| Datei | Zweck |
+|---|---|
+| `index.html` | Oberfläche und gesamte App-Logik (React, ohne Build-Schritt) |
+| `api.php` | Sync, Familien, Einstellungen, Kalender, Admin |
+| `jukebox.php` | Musik-Scan, Streaming, Cover, Upload, Verwaltung |
+| `remote.php` | Externe Musikquellen: WebDAV, FTP, HTTPS/S3, Mounts |
+| `styles.css` | Gestaltung |
+| `lang/*.js` | Übersetzungen (21 Sprachen) |
+| `audio/` | Musikdateien, Unterordner = Alben |
 
 ## Installation
 
@@ -94,10 +126,32 @@ Kopiere `.famtask_cfg.php.example` zu `.famtask_cfg.php` und passe an:
 ); ?>
 ```
 
+Optional über die Umgebungsvariable `FAMTASK_REMOTE_ROOTS` (Komma-getrennt)
+einschränken, aus welchen Verzeichnissen „Gemountetes Laufwerk"-Quellen lesen
+dürfen. Standard: `/mnt,/media,/srv,/net,/Volumes`.
+
+## Sicherheit
+
+> ⚠️ **FamTask hat keine echte Benutzerverwaltung.** Der Familiencode ist keine
+> Authentifizierung – er steht im Klartext im lokalStorage jedes Geräts, und
+> jeder, der ihn kennt, kann über `api.php` Daten lesen und schreiben.
+>
+> **FamTask deshalb nicht ungeschützt ins Internet stellen.** Empfehlung:
+> nur im Heimnetz betreiben oder einen Reverse-Proxy mit Basic-Auth davorsetzen.
+
+Zugangsdaten externer Musikquellen liegen ausschliesslich in der Datenbank
+und werden von `remote.php` nie an den Client zurückgegeben.
+
 ## Verwandte Repositories
 
 - **famtask_installer** – Web-basierter Installer/Updater
 - **famtask_docker** – Docker Compose Setup + Proxmox Installer
+- **famtask_docs** – ausführliche Dokumentation
+- **famtask_proxmox** – Proxmox-/LXC-Installer
+
+## Versionshistorie
+
+Siehe [CHANGELOG.md](CHANGELOG.md).
 
 ## Lizenz
 

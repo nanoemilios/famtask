@@ -155,6 +155,8 @@ window._langData = {
   // ── Child Screen ──
   "child.earned_minutes": "已获得分钟数",
   "child.total_saved": "累计节省",
+
+  // ── Sackgeld-Felder ──  "child.weekly_pocket": "每周金额 (CHF)",  "child.start_pocket": "初始余额 (CHF)",
   "child.today": "今日",
   "child.tasks": "任务",
   "child.today_progress": "{done}/{total}",
@@ -242,6 +244,33 @@ window._langData = {
   "fines.none_configured": "未配置扣罚",
   "fines.applied": "⚠️ -{minutes} 分钟 — {title}",
   "fines.add_btn": "+ 添加扣罚",
+
+  // ── Sackgeld (CHF) ──  "nav.money": "金钱",
+  "money.balance": "余额",
+  "money.weekly_hint": "每周金额：{amount}",
+  "money.pay_out": "支付 · {amount}",
+  "money.pay_out_title": "支付零花钱",
+  "money.confirm_payout": "支付",
+  "money.amount": "金额 (CHF)",
+  "money.enter_amount": "请输入金额",
+  "money.paid": "已支付零花钱",
+  "money.paid_toast": "已入账：{amount}",
+  "money.to_savings": "转入储蓄",
+  "money.personal": "私人购买",
+  "money.confirm_out": "扣除",
+  "money.reason_savings": "转入储蓄",
+  "money.reason_gift": "私人购买",
+  "money.note": "备注（可选）",
+  "money.weekly_label": "每周金额",
+  "money.removed_toast": "已扣除：{amount}",
+  "money.debt": "欠款",
+  "money.money_fine": "金钱罚款",
+  "money.pin_hint": "输入 PIN 以确认",
+  "money.fines_today": "今日罚款：−{amount}",
+  "money.fines_title": "金钱罚款",
+  "money.no_money_fines": "未设置金钱罚款",
+  "money.history": "明细",
+  "money.no_history": "暂无记录",  "fine.money_penalty": "扣除 (CHF)",  "fine.penalty_hint": "0 = 不扣除。金钱罚款在应用时需要家长 PIN。",  "fines.applied_money": "⚠️ -{minutes} 分钟 · -{money} — {title}",
 
   // ── Fine Modal ──
   "fine.add": "添加扣罚",

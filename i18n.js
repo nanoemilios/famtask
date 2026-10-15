@@ -1,18 +1,27 @@
 (function(){
   window._langData = {};
+  // Deutsche Texte bleiben als Rueckfallbasis erhalten, wenn eine andere
+  // Sprache einen Schluessel noch nicht uebersetzt hat. Ohne das zeigt die
+  // Oberflaege rohe Schluessel wie "audio.for_child" an.
+  window._langDataDe = {};
   window._lang = 'de';
 
-  window.t = function(key, vars) {
-    let val = window._langData[key];
-    if (typeof val !== 'string') {
-      const keys = key.split('.');
-      val = window._langData;
-      for (const k of keys) {
-        if (val && typeof val === 'object' && k in val) val = val[k];
-        else { val = key; break; }
-      }
-      if (typeof val !== 'string') val = key;
+  function lookup(data, key) {
+    let val = data[key];
+    if (typeof val === 'string') return val;
+    const keys = key.split('.');
+    val = data;
+    for (const k of keys) {
+      if (val && typeof val === 'object' && k in val) val = val[k];
+      else return null;
     }
+    return typeof val === 'string' ? val : null;
+  }
+
+  window.t = function(key, vars) {
+    let val = lookup(window._langData, key);
+    if (val === null) val = lookup(window._langDataDe, key);
+    if (val === null) val = key;
     if (vars) {
       Object.entries(vars).forEach(([k,v]) => { val = val.replace('{'+k+'}', v); });
     }
@@ -24,10 +33,28 @@
     return map[window._lang] || 'de-CH';
   };
 
+  function inject(lang, done) {
+    const s = document.createElement('script');
+    s.src = 'lang/' + lang + '.js';
+    s.onload = done;
+    s.onerror = done;          // Fehlende Datei darf die App nicht blockieren
+    document.head.appendChild(s);
+  }
+
   window.loadLang = function(lang) {
-    const script = document.createElement('script');
-    script.src = 'lang/' + lang + '.js';
-    script.onload = function() { window._lang = lang; document.documentElement.lang = lang; };
-    document.head.appendChild(script);
+    const done = function() {
+      window._lang = lang;
+      document.documentElement.lang = lang;
+    };
+    // Deutsch zuerst laden, damit es als Rueckfallbasis bereitsteht
+    if (lang !== 'de' && Object.keys(window._langDataDe).length === 0) {
+      inject('de', function() {
+        window._langDataDe = window._langData;
+        window._langData = {};
+        inject(lang, done);
+      });
+    } else {
+      inject(lang, done);
+    }
   };
 })();

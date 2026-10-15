@@ -1,6 +1,6 @@
 <?php
 /**
- * FamTask – api.php  v1.4
+ * FamTask – api.php  v1.5
  * ─────────────────────────────────────────────────────────────────────────────
  * Einzige Backend-Datei für:
  *   • Installer   → api.php im Browser (erster Aufruf)
@@ -12,7 +12,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-define('APP_VERSION', '1.4');
+define('APP_VERSION', '1.5.0');
 define('CFG',         __DIR__ . '/.famtask_cfg.php');
 // ── PHP-Bootstrap: keine HTML-Fehler ins JSON, Timezone nur falls ungesetzt ──
 error_reporting(E_ALL & ~E_DEPRECATED);
@@ -85,6 +85,7 @@ $MIGRATIONS = [
     "
     // v1.3: Keine Schema-Änderungen nötig
     // v1.4: Admin-PIN-Auth für api.php, Familien-Edit/Delete in App, MediaTypeModal, div. UI-Fixes
+    // v1.5: Sackgeld (CHF) – nur neue Keys in famtask_data, kein Schema-Change
 ];
 
 // ── Routing ──────────────────────────────────────────────────────────────────
@@ -1097,7 +1098,7 @@ function httpGet(string $url, int $timeout = 8, array $headers = []): string|fal
             CURLOPT_TIMEOUT        => $timeout,
             CURLOPT_CONNECTTIMEOUT => $timeout,
             CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_USERAGENT      => 'FamTask/1.4',
+            CURLOPT_USERAGENT      => 'FamTask/1.5',
             CURLOPT_HTTPHEADER     => $headers,
         ]);
         $body = curl_exec($ch);
@@ -1107,7 +1108,7 @@ function httpGet(string $url, int $timeout = 8, array $headers = []): string|fal
     }
     $ctx = stream_context_create(['http' => [
         'timeout'      => $timeout,
-        'user_agent'   => 'FamTask/1.4',
+        'user_agent'   => 'FamTask/1.5',
         'header'       => implode("\r\n", $headers),
         'ignore_errors'=> true,
     ]]);
