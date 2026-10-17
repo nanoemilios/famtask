@@ -1527,6 +1527,24 @@ const ANIMALS = [
       const [gcalOff,setGcalOff]=useState(0);          // Monat-Offset für Global-Kalender
       const [gcalFilter,setGcalFilter]=useState(null);  // Kind-Filter im Global-Kalender
       const [gcalView,setGcalView]=useState('week');     // day/week/month
+      // Einmalig: Cover aus dem Speicher werfen, die noch mit der alten
+      // (fehlerhaften) Suchlogik gefunden wurden – z. B. das Cover der
+      // Tracknummer "01". Lokal hinzugefügte Dateien bleiben erhalten.
+      (()=>{ try{
+        if (localStorage.getItem('ft-cover-ver') === '2') return;
+        const bereinigen = (key) => {
+          const v = localStorage.getItem(key); if (!v) return;
+          const arr = JSON.parse(v); if (!Array.isArray(arr)) return;
+          arr.forEach(a => {
+            if (!a || typeof a !== 'object') return;
+            if (a.cover && a.cover.indexOf('data:') !== 0) a.cover = null;
+            if (Array.isArray(a.songs)) a.songs.forEach(s => { if (s && s.cover && s.cover.indexOf('data:') !== 0) s.cover = null; });
+          });
+          localStorage.setItem(key, JSON.stringify(arr));
+        };
+        bereinigen('ft-al'); bereinigen('ft-ab');
+        localStorage.setItem('ft-cover-ver', '2');
+      }catch(e){} })();
       const [audioList,setAudioList]=useState(()=>{try{const v=localStorage.getItem('ft-al');return v?JSON.parse(v):[];}catch(e){return [];}});   // Audio-Playlist (flat)
       const [albums,setAlbums]=useState(()=>{try{const v=localStorage.getItem('ft-ab');return v?JSON.parse(v):[];}catch(e){return [];}});   // Server-Alben (gruppiert)
       const [currentAudio,setCurrentAudio]=useState(null); // Aktuell spielende Audio
@@ -1696,8 +1714,13 @@ const AudioPlayerScreen = () => {
             src: s.src,
             duration: 0,
             title: s.title,
+            artist: s.artist || '',
+            albumTag: s.albumTag || '',
+            file: s.file || '',
+            hasCover: !!s.hasCover,
             album: a.album,
-            cover: null
+            // Album-Cover (Datei oder aus den Metadaten) gilt für alle Songs
+            cover: a.localCover || null
           }))
         }));
         albumData.forEach(album => {
@@ -1725,72 +1748,76 @@ const AudioPlayerScreen = () => {
     return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="'+c1+'"/><stop offset="100%" stop-color="'+c2+'"/></linearGradient></defs><rect width="100" height="100" fill="url(#g)" rx="16"/><text x="50" y="62" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="Arial,sans-serif" font-size="44" font-weight="bold">'+s+'</text></svg>');
   };
 
-  // ── Cover-Bilder für Tracks ohne Cover suchen ──
-  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  // ── Cover-Bilder passend zu den Songs suchen ──
+  // Reihenfolge: Album-Cover (Datei oder aus den Musik-Metadaten) → eine Suche
+  // pro Album → farbiger Platzhalter. Der Server prüft jeden Treffer gegen den
+  // gesuchten Namen und liefert lieber gar nichts als ein unpassendes Bild.
+  const coverCache = (()=>{ try{ return JSON.parse(localStorage.getItem('ft-cover-cache')||'{}')||{}; }catch(e){ return {}; } })();
+  const coverCacheSave = () => { try{ localStorage.setItem('ft-cover-cache', JSON.stringify(coverCache)); }catch(e){} };
+  const needsCover    = (t) => !t.cover || t.cover.indexOf('data:') === 0;
+  const coverTitleOf  = (t) => (t.title || t.name || '').replace(/\.[a-z0-9]{2,4}$/i,'').trim();
+  const tagCoverUrl   = (t) => 'jukebox.php?action=tagcover&album='+encodeURIComponent(t.album||'')+'&file='+encodeURIComponent(t.file||'');
+  // Wichtig: Bei Server-Tracks zeigt die UI 'album.songs' an, nicht 'audioList'.
+  // Ohne dieses Spiegeln bleibt der Album-Baum bei cover:null.
+  const setCoverToList = (track, url) => {
+    setAudioList(p => p.map(a => a.id === track.id ? {...a, cover: url} : a));
+    setAlbums(p => p.map(al => ({ ...al, songs: al.songs.map(s => s.id === track.id ? {...s, cover: url} : s) })));
+  };
+  /** Cover für ein ganzes Album setzen: Kachel und alle Songs ohne eigenes Bild. */
+  const setAlbumCover = (album, url) => {
+    setAlbums(p => p.map(al => al.album === album ? {
+      ...al,
+      localCover: al.localCover || url,
+      songs: al.songs.map(s => s.cover ? s : {...s, cover: url})
+    } : al));
+  };
+  /** Cover-Suche mit Zwischenspeicher: Treffer dauerhaft, Fehlschlag 1 Tag. */
+  const searchCover = async (key, params) => {
+    const c = coverCache[key];
+    if (c) {
+      if (c.url) return c.url;
+      if (Date.now() - (c.ts||0) < 86400000) return null;
+    }
+    let url = null;
+    try {
+      const qs = Object.keys(params).filter(k => params[k]).map(k => k+'='+encodeURIComponent(params[k])).join('&');
+      const r = await fetch('jukebox.php?action=cover&'+qs);
+      if (r.ok) { const d = await r.json(); if (d && d.coverUrl) url = d.coverUrl; }
+    } catch(e) {}
+    coverCache[key] = { url: url || '', ts: Date.now() };
+    coverCacheSave();
+    return url;
+  };
   const fetchCovers = async (tracks) => {
     if (_coversBusy) return;
     _coversBusy = true;
     try {
-    for (const track of tracks) {
-      if (track.cover && track.cover.indexOf('data:')!==0) continue;
-      const raw = (track.title||track.name).replace(/[—–-].+$/, '').trim();
-      const term = encodeURIComponent(raw);
-      let coverUrl = null;
-      // Sofort einen farbigen Platzhalter setzen
-      setAudioList(p => p.map(a => a.id === track.id ? {...a, cover: genCover(raw)} : a));
-      // 1. MusicBrainz + Cover Art Archive (prüft erst via MusicBrainz ob Cover existiert → kein 404)
-      try {
-        const r = await fetch('https://musicbrainz.org/ws/2/recording/?query='+term+'&fmt=json&limit=2&inc=releases');
-        if (r.ok) {
-          const d = await r.json();
-          if (d && d.recordings && d.recordings[0]) {
-            const releases = (d.recordings[0].releases || []).slice(0, 3);
-            for (let i = 0; i < releases.length && !coverUrl; i++) {
-              await sleep(1100); // MusicBrainz: max 1 req/sec
-              try {
-                // KEIN inc=cover-art-archives: das ist kein gueltiger Parameter
-                // fuer das release-Resource (HTTP 400). Ohne inc liefert
-                // MusicBrainz 'cover-art-archive' von selbst mit.
-                const rr = await fetch('https://musicbrainz.org/ws/2/release/'+releases[i].id+'?fmt=json');
-                if (rr.ok) {
-                  const rd = await rr.json();
-                  if (rd && rd['cover-art-archive'] && rd['cover-art-archive'].front) {
-                    const cr = await fetch('https://coverartarchive.org/release/'+releases[i].id);
-                    if (cr.ok) {
-                      const cd = await cr.json();
-                      if (cd.images && cd.images.length > 0) {
-                        coverUrl = cd.images[0].thumbnails?.['250'] || cd.images[0].image;
-                      }
-                    }
-                  }
-                }
-              } catch(e) {}
-            }
-          }
+      const need = tracks.filter(needsCover);
+      if (need.length === 0) return;
+      // Sofort farbige Platzhalter setzen, damit nichts leer bleibt
+      need.forEach(t => setAudioList(p => p.map(a => a.id === t.id ? {...a, cover: genCover(coverTitleOf(t) || t.album || '?')} : a)));
+
+      const albumCovers = {};   // Album -> Cover-URL oder ''
+      for (const t of need) {
+        const isSingle = !t.album || t.album === 'Singles';
+        if (isSingle) {
+          // Lose Datei: eingebettetes Bild oder Suche nach dem Titel
+          const url = t.hasCover
+            ? tagCoverUrl(t)
+            : await searchCover('ttl:'+coverTitleOf(t).toLowerCase(), { title: coverTitleOf(t), artist: t.artist });
+          if (url) setCoverToList(t, url);
+          continue;
         }
-      } catch(e) {}
-      // 2. Fallback: Server-Endpunkt
-      if (!coverUrl) {
-        try {
-          const r = await fetch('jukebox.php?action=cover&term='+term);
-          if (r.ok) {
-            const d = await r.json();
-            if (d && d.coverUrl) coverUrl = d.coverUrl;
-          }
-        } catch(e) {}
+        if (!(t.album in albumCovers)) {
+          // Ein Bild aus den Metadaten hat Vorrang, sonst einmal pro Album suchen
+          const mitBild = need.find(x => x.album === t.album && x.hasCover);
+          let url = mitBild ? tagCoverUrl(mitBild) : null;
+          if (!url) url = await searchCover('alb:'+t.album.toLowerCase(), { album: t.album, albumTag: t.albumTag, artist: t.artist });
+          albumCovers[t.album] = url || '';
+          if (url) setAlbumCover(t.album, url);
+        }
+        if (albumCovers[t.album]) setCoverToList(t, albumCovers[t.album]);
       }
-      if (coverUrl) {
-        setAudioList(p => p.map(a => a.id === track.id ? {...a, cover: coverUrl} : a));
-        // Wichtig: Bei Server-Tracks zeigt die UI 'album.songs' an, nicht
-        // 'audioList'. Ohne dieses Spiegeln bleibt der Album-Baum bei
-        // cover:null und die gesuchten Cover erscheinen nie.
-        setAlbums(p => p.map(al => ({
-          ...al,
-          songs: al.songs.map(s => s.id === track.id ? {...s, cover: coverUrl} : s)
-        })));
-      }
-      await sleep(1100);
-    }
     } finally { _coversBusy = false; }
   };
   // ── Auto-load Server-Tracks wenn Liste leer ──

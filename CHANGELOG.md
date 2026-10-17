@@ -45,6 +45,19 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
   zurück. Ursache waren Komponenten, die bei jedem Rendern neu erzeugt wurden
   und dadurch Eingabefelder mitten im Schreiben neu aufsetzten.
 
+**Jukebox – Musik-Metadaten und passende Cover**
+- `id3.php`: eigener, schlanker Parser für ID3v2.3/2.4 und ID3v1 (MP3) sowie
+  iTunes-Atome (M4A/MP4). Gelesen werden Titel, Interpret, Album und das
+  eingebettete Cover; Ergebnisse liegen in `audio/.tags-cache.json`, damit
+  nicht bei jedem Aufruf alle Dateien geöffnet werden.
+- Titel, Interpret und Album kommen aus den Tags. Fehlen sie, gilt weiterhin
+  Dateiname und Ordnername.
+- Ein vorhandenes eingebettetes Bild wird automatisch als Album-Cover
+  übernommen (`audio/.covers/<Ordnername>.jpg`), sofern dort noch keins liegt.
+  Ein von Hand abgelegtes Cover bleibt unangetastet.
+- Neuer Endpunkt `jukebox.php?action=tagcover` liefert das eingebettete Bild
+  einer einzelnen Datei.
+
 ### Geändert
 - Komponenten mit eigenen Eingabefeldern (Modals, Admin, Kind-Screen,
   Musik-Player) liegen jetzt auf oberster Ebene und bekommen ihren Kontext
@@ -57,10 +70,21 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 - Dockerfile: PHP-Extensions `curl` und `ftp` ergänzt
 - `docker-compose.yml`: kommentierte Beispiele für SMB-/NFS-Bind-Mounts und
   die Variable `FAMTASK_REMOTE_ROOTS`
+- Cover-Suche fragt Album und Titel getrennt ab und beurteilt jeden Treffer
+  gegen den gesuchten Namen. Gesucht wird einmal pro Album statt pro Titel.
+- Nur noch iTunes, Deezer und MusicBrainz werden befragt. YouTube-Thumbnails
+  und die Bing-Bildersuche sind entfernt – sie lieferten praktisch beliebige
+  Bilder und waren die häufigste Ursache für falsche Cover.
+- Gefundene Cover bleiben im Browser gespeichert (`ft-cover-cache`); einmalig
+  werden dabei die mit der alten Suchlogik gefundenen Cover verworfen.
 
 ### Behoben
 - Cover-Autoloaden der Jukebox lieferte nie sichtbare Cover
 - Doppeltes Laden der Server-Tracks überschrieb bereits geladene Cover
+- **Falsche Cover:** Der Suchbegriff wurde am ersten Bindestrich abgeschnitten.
+  Bei Dateien wie `01 - Hexerei.mp3` wurde deshalb nur die Tracknummer `01`
+  gesucht – und die Suche lieferte irgendein fremdes Bild. Zusätzlich fehlte
+  jede Prüfung, ob der Treffer überhaupt zum Titel oder Album passt.
 - 403 eines WebDAV-Servers wurde als 502 gemeldet statt als 401
 - Zwei Player gleichzeitig auf dem Jukebox-Screen
 - Versionsanzeige stand in Login, Footer und Rechtstexten noch auf `v1.4.0`
@@ -98,8 +122,14 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 - `AudioPlayerScreen` und die Spiele werden bei jedem Rendern neu erzeugt.
   Das ist Performance-unkritisch, aber zwingt UI-Zustand in `FamTask` statt in
   die Komponente zu legen.
-- Der Suchbegriff für Cover wird nach einem Bindestrich abgeschnitten; bei
-  Titeln der Form `Interpret - Titel` kann ein unpassendes Cover gewählt werden.
+- Sehr allgemeine Ordner- und Albumnamen (z. B. „Album A", „CD1") können
+  weiterhin kein oder ein unpassendes Cover liefern – die Prüfung lehnt
+  Unklares lieber ab. Am besten wirkt ein Ordnername der Form „Serie + Folge"
+  (z. B. „Bibi Blocksberg 12") oder ein gepflegtes ID3-Album. Ein eigenes Cover
+  lässt sich jederzeit als `audio/.covers/<Ordnername>.jpg` ablegen
+  (Leerzeichen werden zu `_`, Sonderzeichen zu `_`).
+- Ohne Metadaten (WAV/OGG, Dateien ohne Tags) bleibt es beim Dateinamen als
+  Titel; solche Ordner finden nur dann ein Cover, wenn der Ordnername passt.
 - S3 wird nur über direkte oder presigned HTTPS-URLs unterstützt, nicht über
   SigV4-Signierung mit Bucket und Access Key.
 - Ein automatisierter Re-Sync (Cronjob) fehlt; Importe laufen von Hand.
