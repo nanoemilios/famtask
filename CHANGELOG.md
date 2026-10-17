@@ -66,8 +66,10 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 - Versionsanzeige stand in Login, Footer und Rechtstexten noch auf `v1.4.0`
 - README nannte 21 Sprachen, tatsächlich sind es 19
 - 54 fehlende Übersetzungs-Schlüssel (`audio.*`, `admin.music_tab`,
-  `remote.*`) in den 17 nicht-deutschen/-englischen Sprachen ergänzt –
-  Werte vorläufig aus Englisch übernommen, noch nicht muttersprachlich geprüft
+  `remote.*`) in allen 17 weiteren Sprachen ergänzt (Spielertitel pro Kind,
+  Favoriten, externe Musikquellen)
+- Gemischtsprachige Zeichenkette bei „Simon Says" (Arabisch) korrigiert
+- Koreanisch: falscher Platzhalter `{uses}` in `media.timer_stopped` → `{used}`
 
 ### Sicherheit
 - Zugangsdaten externer Quellen werden nie an den Client ausgeliefert
