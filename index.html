@@ -50,6 +50,8 @@
 
     // Family Code — aus localStorage laden, wird beim Login gesetzt
     function _getFC() { try { const fc=localStorage.getItem('ft_fc')||'FAM001'; return fc==='default'?'FAM001':fc; } catch(e){return 'FAM001';} }
+    // Admin-PIN (nur fuer Server-Aufrufe, die Admin-Rechte brauchen)
+    function _adminPin() { try { const v=storage.get('ft-pin'); return (v&&v.value)||'1234'; } catch(e){ return '1234'; } }
     function _apiUrl(action='') { const fc=_getFC(); return API+(action?'?action='+action+'&fc='+fc:'?fc='+fc); }
 
     // Externe Musikquellen (my/remote.php). Zugangsdaten bleiben auf dem
@@ -58,7 +60,7 @@
     async function _remotePost(action, body) {
       const r = await fetch(_remoteUrl(action), {
         method:'POST',
-        headers:{'Content-Type':'application/json','X-Family-Code':_getFC()},
+        headers:{'Content-Type':'application/json','X-Family-Code':_getFC(),'X-Admin-Pin':_adminPin()},
         body: JSON.stringify(body||{})
       });
       let d = null;
@@ -1021,7 +1023,7 @@ const ANIMALS = [
 
       const reload = async () => {
         try {
-          const r = await fetch(_remoteUrl('list'), {headers:{'X-Family-Code':_getFC()}});
+          const r = await fetch(_remoteUrl('list'), {headers:{'X-Family-Code':_getFC(),'X-Admin-Pin':_adminPin()}});
           const d = await r.json();
           if (d && d.sources) setSrcs(d.sources);
         } catch(e) { /* offline: Liste bleibt stehen */ }
@@ -1231,7 +1233,7 @@ const ANIMALS = [
 
     function AdminSettings({ui}) {
       const {familyName,familyCode,onRename,onLogout,showToast,
-             newPin1,setNewPin1,newPin2,setNewPin2,pinMsg,setPinMsg,setAdminPin,
+             newPin1,setNewPin1,newPin2,setNewPin2,pinMsg,setPinMsg,adminPin,setAdminPin,
              children,setChildren,mediaTypes,setMediaU,getMediaUsed}=ui;
         const [lsCleared,setLsCleared]=React.useState(false);
         const [editingName,setEditingName]=React.useState(false);
@@ -1245,7 +1247,7 @@ const ANIMALS = [
           if(!name)return;
           setRenaming(true);
           try{
-            const r=await fetch('api.php?action=rename_family',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fc:familyCode,name})});
+            const r=await fetch('api.php?action=rename_family',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Pin':adminPin},body:JSON.stringify({fc:familyCode,name})});
             const d=await r.json();
             if(d.ok){onRename(name);setEditingName(false);showToast(t('settings.name_changed'));}
             else showToast(d.msg||t('common.error'),'err');
@@ -1257,7 +1259,7 @@ const ANIMALS = [
           if(!confirm(t('settings.confirm_delete_2')))return;
           setDeleting(true);
           try{
-            const r=await fetch('api.php?action=delete_family',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fc:familyCode})});
+            const r=await fetch('api.php?action=delete_family',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Pin':adminPin},body:JSON.stringify({fc:familyCode})});
             const d=await r.json();
             if(d.ok){showToast(t('settings.family_deleted'));onLogout();}
             else showToast(d.msg||t('common.error'),'err');

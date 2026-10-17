@@ -88,6 +88,112 @@ $MIGRATIONS = [
     // v1.5: Sackgeld (CHF) – nur neue Keys in famtask_data, kein Schema-Change
 ];
 
+// ── Admin-Authentifizierung ──────────────────────────────────────────────────
+// Zentrale PIN-Prüfung, damit auch die JSON-Endpunkte (settings, families,
+// backup, update, ...) geschützt sind – nicht nur das HTML-Panel.
+function adminPinOf(PDO $pdo): string {
+    try {
+        $v = $pdo->query("SELECT meta_value FROM famtask_meta WHERE meta_key='setting_admin_pin'")->fetchColumn();
+        if (is_string($v) && $v !== '') return $v;
+    } catch (PDOException $e) {}
+    return '1234';
+}
+function adminSessionTable(PDO $pdo): void {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS famtask_admin_sessions (
+        token      CHAR(64) NOT NULL PRIMARY KEY,
+        created_at INT NOT NULL,
+        expires_at INT NOT NULL,
+        ip         VARCHAR(45) NOT NULL DEFAULT ''
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+function adminGuardTable(PDO $pdo): void {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS famtask_auth_guard (
+        ip      VARCHAR(45) NOT NULL PRIMARY KEY,
+        fails   INT NOT NULL DEFAULT 0,
+        last_ts INT NOT NULL DEFAULT 0
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+// Brute-Force-Bremse: max. 8 Fehlversuche pro IP in 15 Minuten
+function adminThrottled(PDO $pdo, int $maxFails = 8, int $window = 900): bool {
+    try {
+        adminGuardTable($pdo);
+        $st = $pdo->prepare("SELECT fails,last_ts FROM famtask_auth_guard WHERE ip=?");
+        $st->execute([$_SERVER['REMOTE_ADDR'] ?? '0.0.0.0']);
+        $r = $st->fetch();
+        return $r && (time() - (int)$r['last_ts']) < $window && (int)$r['fails'] >= $maxFails;
+    } catch (PDOException $e) {}
+    return false; // im Zweifel nicht blockieren
+}
+function adminNoteFailure(PDO $pdo, int $window = 900): void {
+    try {
+        adminGuardTable($pdo);
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $st = $pdo->prepare("SELECT fails,last_ts FROM famtask_auth_guard WHERE ip=?");
+        $st->execute([$ip]);
+        $r = $st->fetch();
+        if ($r && (time() - (int)$r['last_ts']) < $window) {
+            $pdo->prepare("UPDATE famtask_auth_guard SET fails=fails+1,last_ts=? WHERE ip=?")->execute([time(), $ip]);
+        } else {
+            $pdo->prepare("INSERT INTO famtask_auth_guard (ip,fails,last_ts) VALUES (?,1,?)
+                           ON DUPLICATE KEY UPDATE fails=VALUES(fails),last_ts=VALUES(last_ts)")->execute([$ip, time()]);
+        }
+    } catch (PDOException $e) {}
+}
+function adminClearFailures(PDO $pdo): void {
+    try {
+        adminGuardTable($pdo);
+        $pdo->prepare("DELETE FROM famtask_auth_guard WHERE ip=?")->execute([$_SERVER['REMOTE_ADDR'] ?? '0.0.0.0']);
+    } catch (PDOException $e) {}
+}
+function adminSessionStart(PDO $pdo): string {
+    adminSessionTable($pdo);
+    $token = bin2hex(random_bytes(32));
+    $pdo->prepare("INSERT INTO famtask_admin_sessions (token,created_at,expires_at,ip) VALUES (?,?,?,?)")
+        ->execute([$token, time(), time() + 86400 * 30, $_SERVER['REMOTE_ADDR'] ?? '']);
+    try { $pdo->prepare("DELETE FROM famtask_admin_sessions WHERE expires_at < ?")->execute([time() - 86400 * 30]); } catch (PDOException $e) {}
+    return $token;
+}
+function adminSessionValid(PDO $pdo, string $token): bool {
+    if (strlen($token) !== 64) return false;
+    try {
+        adminSessionTable($pdo);
+        $st = $pdo->prepare("SELECT expires_at FROM famtask_admin_sessions WHERE token=?");
+        $st->execute([$token]);
+        $e = $st->fetchColumn();
+        return $e !== false && (int)$e > time();
+    } catch (PDOException $e) { return false; }
+}
+function adminSessionEnd(PDO $pdo): void {
+    $token = $_COOKIE['ft_admin_auth'] ?? '';
+    if (!is_string($token) || strlen($token) !== 64) return;
+    try { adminSessionTable($pdo); $pdo->prepare("DELETE FROM famtask_admin_sessions WHERE token=?")->execute([$token]); } catch (PDOException $e) {}
+}
+function adminPinMatches(PDO $pdo): bool {
+    $pin = $_SERVER['HTTP_X_ADMIN_PIN'] ?? '';
+    return is_string($pin) && $pin !== '' && hash_equals(adminPinOf($pdo), $pin);
+}
+function adminAuthOk(PDO $pdo): bool {
+    $c = $_COOKIE['ft_admin_auth'] ?? '';
+    if (is_string($c) && $c !== '') {
+        if (adminSessionValid($pdo, $c)) return true;
+        // Übergangsweise weiterhin das alte, deterministische Cookie akzeptieren
+        if (strlen($c) === 40 && hash_equals(sha1('ft_admin_' . adminPinOf($pdo)), $c)) return true;
+    }
+    return adminPinMatches($pdo);
+}
+function requireAdmin(PDO $pdo): void {
+    if (adminAuthOk($pdo)) { adminClearFailures($pdo); return; }
+    if (adminThrottled($pdo)) {
+        http_response_code(429);
+        jsonOut(['ok'=>false,'error'=>'too_many_attempts','msg'=>'Zu viele Fehlversuche. Bitte später erneut versuchen.']);
+        exit;
+    }
+    adminNoteFailure($pdo);
+    http_response_code(401);
+    jsonOut(['ok'=>false,'error'=>'unauthorized','msg'=>'Admin-Anmeldung erforderlich. Bitte zuerst im Server-Admin-Panel anmelden.']);
+    exit;
+}
+
 // ── Routing ──────────────────────────────────────────────────────────────────
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -104,11 +210,12 @@ if (!$isJson && $action === '') { http_response_code(404); echo 'Not Found'; exi
 
 if ($action === 'admin') { showAdminPage(); exit; }
 
-if ($action === 'install')  { handleInstall(); exit; }
-if ($action === 'testdb')   { handleTestDb();  exit; }
+if ($action === 'install')  { if (file_exists(CFG)) requireAdmin(getDB(getCfg())); handleInstall(); exit; }
+if ($action === 'testdb')   { if (file_exists(CFG)) requireAdmin(getDB(getCfg())); handleTestDb();  exit; }
 if ($action === 'status')   { handleStatus();  exit; }
 if ($action === 'update') {
     if (!$isJson) { showAdminPage('update'); exit; }
+    requireAdmin(getDB(getCfg()));
     handleUpdate($MIGRATIONS); exit;
 }
 if ($action === 'track') {
@@ -118,6 +225,7 @@ if ($action === 'track') {
 if ($action === 'stats') {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
     if (!$isJson) { showAdminPage('stats'); exit; }
+    requireAdmin(getDB(getCfg()));
     handleStats(getDB(getCfg())); exit;
 }
 if ($action === 'register') {
@@ -131,23 +239,28 @@ if ($action === 'verify') {
 if ($action === 'families') {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
     if (!$isJson) { showAdminPage('families'); exit; }
+    requireAdmin(getDB(getCfg()));
     handleFamilies(getDB(getCfg())); exit;
 }
 if ($action === 'rename_family') {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
+    requireAdmin(getDB(getCfg()));
     handleRenameFamily(getDB(getCfg())); exit;
 }
 if ($action === 'delete_family') {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
+    requireAdmin(getDB(getCfg()));
     handleDeleteFamily(getDB(getCfg())); exit;
 }
 if ($action === 'settings') {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
     if (!$isJson) { showAdminPage('settings'); exit; }
+    requireAdmin(getDB(getCfg()));
     handleGetSettings(getDB(getCfg())); exit;
 }
 if ($action === 'save_settings') {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
+    requireAdmin(getDB(getCfg()));
     handleSaveSettings(getDB(getCfg())); exit;
 }
 // NEU: iCal-Import (Google Kalender)
@@ -157,16 +270,19 @@ if ($action === 'ical') {
 }
 if ($action === 'ytplaylist') {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
+    requireAdmin(getDB(getCfg()));
     handleYoutubePlaylist(getCfg()); exit;
 }
 
 // Backup / Restore (Admin)
 if ($action === 'backup') {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
+    requireAdmin(getDB(getCfg()));
     handleBackup(getDB(getCfg())); exit;
 }
 if ($action === 'restore') {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
+    requireAdmin(getDB(getCfg()));
     handleRestore(getDB(getCfg())); exit;
 }
 
@@ -550,7 +666,7 @@ function handleIcal(PDO $pdo) {
     } else {
         // Aus .famtask_cfg.php lesen (optional: 'ical_urls' Array)
         if (file_exists(CFG)) {
-            define('FAMTASK', true);
+            if (!defined('FAMTASK')) define('FAMTASK', true);
             $cfg = require CFG;
             if (!empty($cfg['ical_urls']) && is_array($cfg['ical_urls'])) {
                 $urls = $cfg['ical_urls'];
@@ -1186,30 +1302,29 @@ function showAdminPage(string $tab = ''): void {
     // ── Admin-PIN Auth ─────────────────────────────────────────────────────
     $authOk = !$configured; // Install-Seite ohne Auth
     if ($configured && $status['installed'] && !isset($status['error'])) {
-        $stored = '1234';
-        try {
-            $s = $pdo->query("SELECT meta_value FROM famtask_meta WHERE meta_key='setting_admin_pin'");
-            $v = $s->fetchColumn();
-            if ($v) $stored = $v;
-        } catch (PDOException $e) {}
-        $expectedHash = sha1('ft_admin_' . $stored);
+        $stored = adminPinOf($pdo);
 
         // Logout
         if (isset($_GET['logout'])) {
+            adminSessionEnd($pdo);
             setcookie('ft_admin_auth', '', time() - 3600, '/');
             $authOk = false;
         }
-        // Cookie check
-        elseif (isset($_COOKIE['ft_admin_auth']) && $_COOKIE['ft_admin_auth'] === $expectedHash) {
+        // Bereits angemeldet (Session-Cookie oder Admin-PIN-Header)?
+        elseif (adminAuthOk($pdo)) {
             $authOk = true;
         }
-        // POST login
+        // POST-Login
         elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_pin'])) {
-            if ($_POST['admin_pin'] === $stored) {
-                setcookie('ft_admin_auth', $expectedHash, time() + 86400 * 30, '/');
+            if (hash_equals($stored, (string)$_POST['admin_pin'])) {
+                adminClearFailures($pdo);
+                setcookie('ft_admin_auth', adminSessionStart($pdo), time() + 86400 * 30, '/');
                 echo '<script>location.href="?action=admin";</script>';
                 exit;
+            } elseif (adminThrottled($pdo)) {
+                $authError = 'Zu viele Fehlversuche. Bitte in ein paar Minuten erneut versuchen.';
             } else {
+                adminNoteFailure($pdo);
                 $authError = 'Falscher PIN';
             }
         }

@@ -79,6 +79,20 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
   werden auch nach DNS-Auflösung des Hostnamens abgewiesen
 - Hinweise dokumentiert, dass FamTask keine echte Benutzerverwaltung hat –
   der Familiencode ist keine Authentifizierung
+- **Admin-Endpunkte von `api.php` abgesichert:** `settings`, `save_settings`,
+  `families`, `rename_family`, `delete_family`, `backup`, `restore`, `update`,
+  `stats`, `ytplaylist` sowie `install`/`testdb` (bei bestehender Installation)
+  verlangten bisher **keine** Anmeldung. Dadurch waren der Admin-PIN im
+  Klartext auslesbar, Familien löschbar und die Datenbank-Konfiguration
+  überschreibbar. Sie prüfen jetzt dieselbe Admin-Anmeldung wie das Panel.
+- **Admin-Anmeldung mit Zufalls-Session** (`famtask_admin_sessions`) statt des
+  vorhersagbaren Cookies `sha1('ft_admin_' + PIN)`
+- **Brute-Force-Bremse** für die 4-stellige PIN (`famtask_auth_guard`): maximal
+  8 Fehlversuche pro IP in 15 Minuten
+- **`remote.php` abgesichert:** alle Aktionen ausser `status` (`list`, `save`,
+  `delete`, `browse`, `test`, `import`) verlangen jetzt eine Admin-Anmeldung.
+  Bisher war die Datei komplett offen – Fremde konnten Musikquellen anlegen und
+  den Server fremde URLs abrufen lassen (SSRF).
 
 ### Bekannte Einschränkungen
 - `AudioPlayerScreen` und die Spiele werden bei jedem Rendern neu erzeugt.

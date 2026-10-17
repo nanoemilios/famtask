@@ -489,6 +489,82 @@ function collectLocal(string $dir, int $depth = 0, string $rel = '', int &$count
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+//  Admin-Authentifizierung
+//  Der Familiencode ist KEINE Authentifizierung. Alle Aktionen, die
+//  Zugangsdaten beruehren oder Netzwerkzugriffe ausloesen, brauchen eine
+//  gueltige Admin-Anmeldung (Session-Cookie aus api.php oder X-Admin-Pin).
+// ═══════════════════════════════════════════════════════════════════════════
+function adminPinOf(PDO $pdo): string {
+    try {
+        $v = $pdo->query("SELECT meta_value FROM famtask_meta WHERE meta_key='setting_admin_pin'")->fetchColumn();
+        if (is_string($v) && $v !== '') return $v;
+    } catch (PDOException $e) {}
+    return '1234';
+}
+function adminGuardTable(PDO $pdo): void {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS famtask_auth_guard (
+        ip VARCHAR(45) NOT NULL PRIMARY KEY,
+        fails INT NOT NULL DEFAULT 0,
+        last_ts INT NOT NULL DEFAULT 0
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+function adminThrottled(PDO $pdo, int $maxFails = 8, int $window = 900): bool {
+    try {
+        adminGuardTable($pdo);
+        $st = $pdo->prepare("SELECT fails,last_ts FROM famtask_auth_guard WHERE ip=?");
+        $st->execute([$_SERVER['REMOTE_ADDR'] ?? '0.0.0.0']);
+        $r = $st->fetch();
+        return $r && (time() - (int)$r['last_ts']) < $window && (int)$r['fails'] >= $maxFails;
+    } catch (PDOException $e) {}
+    return false;
+}
+function adminNoteFailure(PDO $pdo, int $window = 900): void {
+    try {
+        adminGuardTable($pdo);
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $st = $pdo->prepare("SELECT fails,last_ts FROM famtask_auth_guard WHERE ip=?");
+        $st->execute([$ip]);
+        $r = $st->fetch();
+        if ($r && (time() - (int)$r['last_ts']) < $window) {
+            $pdo->prepare("UPDATE famtask_auth_guard SET fails=fails+1,last_ts=? WHERE ip=?")->execute([time(), $ip]);
+        } else {
+            $pdo->prepare("INSERT INTO famtask_auth_guard (ip,fails,last_ts) VALUES (?,1,?)
+                           ON DUPLICATE KEY UPDATE fails=VALUES(fails),last_ts=VALUES(last_ts)")->execute([$ip, time()]);
+        }
+    } catch (PDOException $e) {}
+}
+function adminClearFailures(PDO $pdo): void {
+    try {
+        adminGuardTable($pdo);
+        $pdo->prepare("DELETE FROM famtask_auth_guard WHERE ip=?")->execute([$_SERVER['REMOTE_ADDR'] ?? '0.0.0.0']);
+    } catch (PDOException $e) {}
+}
+function adminAuthOk(PDO $pdo): bool {
+    $c = $_COOKIE['ft_admin_auth'] ?? '';
+    if (is_string($c) && $c !== '') {
+        if (strlen($c) === 64) {
+            try {
+                $st = $pdo->prepare("SELECT expires_at FROM famtask_admin_sessions WHERE token=?");
+                $st->execute([$c]);
+                $e = $st->fetchColumn();
+                if ($e !== false && (int)$e > time()) return true;
+            } catch (PDOException $e) {}
+        }
+        // Uebergangsweise das alte, deterministische Cookie akzeptieren
+        if (strlen($c) === 40 && hash_equals(sha1('ft_admin_' . adminPinOf($pdo)), $c)) return true;
+    }
+    $pin = $_SERVER['HTTP_X_ADMIN_PIN'] ?? '';
+    return is_string($pin) && $pin !== '' && hash_equals(adminPinOf($pdo), $pin);
+}
+function requireAdminRemote(): void {
+    $pdo = db();
+    if (adminAuthOk($pdo)) { adminClearFailures($pdo); return; }
+    if (adminThrottled($pdo)) fail('Zu viele Fehlversuche. Bitte später erneut versuchen.', 429);
+    adminNoteFailure($pdo);
+    fail('Admin-Anmeldung erforderlich. Bitte zuerst im Server-Admin-Panel anmelden.', 401);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 //  Aktionen
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -524,6 +600,7 @@ if ($action === 'status') {
 
 // ── list ───────────────────────────────────────────────────────────────────
 if ($action === 'list') {
+    requireAdminRemote();
     ensureSchema();
     $st = db()->prepare("SELECT * FROM famtask_remotes WHERE family_code=? ORDER BY name");
     $st->execute([$fc]);
@@ -533,6 +610,7 @@ if ($action === 'list') {
 
 // ── save: Quelle anlegen oder aendern ──────────────────────────────────────
 if ($action === 'save') {
+    requireAdminRemote();
     ensureSchema();
     $id   = (int)($_REQUEST['id'] ?? 0);
     $name = safeName(inStr('name'), 'Quelle');
@@ -582,6 +660,7 @@ if ($action === 'save') {
 
 // ── delete ─────────────────────────────────────────────────────────────────
 if ($action === 'delete') {
+    requireAdminRemote();
     ensureSchema();
     $id = (int)($_REQUEST['id'] ?? 0);
     $st = db()->prepare("DELETE FROM famtask_remotes WHERE id=? AND family_code=?");
@@ -593,6 +672,7 @@ if ($action === 'delete') {
 //  browse / test: Verbindung pruefen und Ordnerinhalt zeigen
 // ═══════════════════════════════════════════════════════════════════════════
 if ($action === 'browse' || $action === 'test') {
+    requireAdminRemote();
     ensureSchema();
 
     if ($action === 'test' && inStr('url') !== '') {
@@ -669,6 +749,7 @@ if ($action === 'browse' || $action === 'test') {
 //  import: Musik in my/audio/<Album>/ holen
 // ═══════════════════════════════════════════════════════════════════════════
 if ($action === 'import') {
+    requireAdminRemote();
     ensureSchema();
 
     $src = loadSource((int)($_REQUEST['id'] ?? 0), $fc);
