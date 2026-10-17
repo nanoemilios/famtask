@@ -1527,11 +1527,12 @@ const ANIMALS = [
       const [gcalOff,setGcalOff]=useState(0);          // Monat-Offset für Global-Kalender
       const [gcalFilter,setGcalFilter]=useState(null);  // Kind-Filter im Global-Kalender
       const [gcalView,setGcalView]=useState('week');     // day/week/month
-      // Einmalig: Cover aus dem Speicher werfen, die noch mit der alten
-      // (fehlerhaften) Suchlogik gefunden wurden – z. B. das Cover der
-      // Tracknummer "01". Lokal hinzugefügte Dateien bleiben erhalten.
+      // Einmalig: Cover aus dem Speicher werfen, die mit einer früheren
+      // (fehlerhaften) Suchlogik gefunden wurden – etwa das Cover der
+      // Tracknummer "01" oder ein fremdes Album gleichen Namens. Lokal
+      // hinzugefügte Dateien und selbst gesetzte Cover bleiben erhalten.
       (()=>{ try{
-        if (localStorage.getItem('ft-cover-ver') === '2') return;
+        if (localStorage.getItem('ft-cover-ver') === '3') return;
         const bereinigen = (key) => {
           const v = localStorage.getItem(key); if (!v) return;
           const arr = JSON.parse(v); if (!Array.isArray(arr)) return;
@@ -1543,7 +1544,8 @@ const ANIMALS = [
           localStorage.setItem(key, JSON.stringify(arr));
         };
         bereinigen('ft-al'); bereinigen('ft-ab');
-        localStorage.setItem('ft-cover-ver', '2');
+        localStorage.removeItem('ft-cover-cache');   // gefundene Cover neu ermitteln
+        localStorage.setItem('ft-cover-ver', '3');
       }catch(e){} })();
       const [audioList,setAudioList]=useState(()=>{try{const v=localStorage.getItem('ft-al');return v?JSON.parse(v):[];}catch(e){return [];}});   // Audio-Playlist (flat)
       const [albums,setAlbums]=useState(()=>{try{const v=localStorage.getItem('ft-ab');return v?JSON.parse(v):[];}catch(e){return [];}});   // Server-Alben (gruppiert)

@@ -78,7 +78,9 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
   und die Bing-Bildersuche sind entfernt – sie lieferten praktisch beliebige
   Bilder und waren die häufigste Ursache für falsche Cover.
 - Gefundene Cover bleiben im Browser gespeichert (`ft-cover-cache`); einmalig
-  werden dabei die mit der alten Suchlogik gefundenen Cover verworfen.
+  werden dabei die mit der alten Suchlogik gefundenen Cover verworfen – seit
+  diesem Fix auch die Trefferliste selbst, sonst blieben falsch gefundene Cover
+  im Browser hängen.
 - Dateinamen im Muster `Interpret - Titel (Zusatz)` werden zerlegt. Vorher galt
   der ganze Dateiname als Titel, weshalb der Vergleich an Zusätzen wie `(Lyrics)`
   oder `[Official Video]` scheiterte und die Suche nichts mehr fand.
