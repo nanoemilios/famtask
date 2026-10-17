@@ -492,6 +492,40 @@ function handleTrack(PDO $pdo) {
 //  Oder konfiguriert in .famtask_cfg.php:
 //    'ical_urls' => ['Familienkalender' => 'https://...', ...]
 // ══════════════════════════════════════════════════════════════════════════════
+/**
+ * SSRF-Prüfung für vom Nutzer gelieferte iCal-URLs.
+ * Nur https:// ist erlaubt; localhost, private/reservierte IP-Bereiche
+ * (10/8, 172.16/12, 192.168/16, 127/8, 169.254/16 …) und die üblichen
+ * Cloud-Metadaten-Endpunkte werden geblockt – auch wenn ein Hostname erst
+ * per DNS auf eine solche Adresse zeigt.
+ */
+function isSafeIcalUrl(string $url): bool {
+    $p = parse_url($url);
+    if (!$p || empty($p['host'])) return false;
+    if (strtolower($p['scheme'] ?? '') !== 'https') return false;
+    if (!empty($p['user']) || !empty($p['pass'])) return false;
+
+    $host = strtolower(trim($p['host'], '[]'));
+    if (in_array($host, ['localhost', 'metadata.google.internal', 'metadata.goog', '169.254.169.254'], true)) {
+        return false;
+    }
+
+    if (filter_var($host, FILTER_VALIDATE_IP)) {
+        $ips = [$host];
+    } else {
+        $ips = @gethostbynamel($host);
+        if ($ips === false) return false;
+    }
+    if (empty($ips)) return false;
+
+    foreach ($ips as $ip) {
+        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 function handleIcal(PDO $pdo) {
     $fc = getFamilyCode() ?: 'FAM001';
 
@@ -531,9 +565,9 @@ function handleIcal(PDO $pdo) {
 
     $imported = 0; $errors = [];
     foreach ($urls as $label => $url) {
-        // Sicherheits-Check: nur https:// erlaubt, kein localhost
-        if (!preg_match('#^https://#i', $url)) { $errors[] = "$label: Nur HTTPS-URLs erlaubt"; continue; }
-        if (preg_match('#localhost|127\.0\.0\.1|::1#i', $url)) { $errors[] = "$label: Lokale URLs nicht erlaubt"; continue; }
+        // Sicherheits-Check (SSRF): nur öffentliches HTTPS, keine lokalen,
+        // privaten oder Cloud-Metadaten-Adressen – auch nicht via DNS.
+        if (!isSafeIcalUrl($url)) { $errors[] = "$label: URL nicht erlaubt (nur öffentliches HTTPS)"; continue; }
 
         // iCal laden (max 2MB, 8s Timeout) – cURL mit fopen-Fallback
         $raw = httpGet($url, 8);

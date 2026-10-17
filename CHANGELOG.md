@@ -63,10 +63,18 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 - Doppeltes Laden der Server-Tracks überschrieb bereits geladene Cover
 - 403 eines WebDAV-Servers wurde als 502 gemeldet statt als 401
 - Zwei Player gleichzeitig auf dem Jukebox-Screen
+- Versionsanzeige stand in Login, Footer und Rechtstexten noch auf `v1.4.0`
+- README nannte 21 Sprachen, tatsächlich sind es 19
+- 54 fehlende Übersetzungs-Schlüssel (`audio.*`, `admin.music_tab`,
+  `remote.*`) in den 17 nicht-deutschen/-englischen Sprachen ergänzt –
+  Werte vorläufig aus Englisch übernommen, noch nicht muttersprachlich geprüft
 
 ### Sicherheit
 - Zugangsdaten externer Quellen werden nie an den Client ausgeliefert
 - Lokale Quellen sind auf konfigurierte Stammpfade beschränkt
+- iCal-Import (`api.php?action=ical`): SSRF-Prüfung gehärtet – nur
+  öffentliches HTTPS, private/reservierte Netze und Cloud-Metadaten-Endpunkte
+  werden auch nach DNS-Auflösung des Hostnamens abgewiesen
 - Hinweise dokumentiert, dass FamTask keine echte Benutzerverwaltung hat –
   der Familiencode ist keine Authentifizierung
 

@@ -83,7 +83,7 @@ Familien-Aufgaben-App mit HTML-Frontend (React) und PHP-Backend (MariaDB).
 | `jukebox.php` | Musik-Scan, Streaming, Cover, Upload, Verwaltung |
 | `remote.php` | Externe Musikquellen: WebDAV, FTP, HTTPS/S3, Mounts |
 | `styles.css` | Gestaltung |
-| `lang/*.js` | Übersetzungen (21 Sprachen) |
+| `lang/*.js` | Übersetzungen (19 Sprachen) |
 | `audio/` | Musikdateien, Unterordner = Alben |
 
 ## Installation

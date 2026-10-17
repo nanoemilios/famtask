@@ -142,7 +142,7 @@ window._langData = {
   "auth.invalid_code": "Code ungültig",
   "auth.connection_error": "Verbindungsfehler",
   "auth.default_family": "Meine Familie",
-  "auth.privacy": "v1.4.0 · Deine Daten bleiben privat",
+  "auth.privacy": "v1.5.0 · Deine Daten bleiben privat",
   "app.description": "Familienaufgaben-App für Santiago und Samuel",
 
   // ── Home ──
@@ -706,11 +706,11 @@ window._langData = {
   "landing.footer.contact": "Kontakt",
   "landing.footer.privacy": "Datenschutz",
   "landing.footer.terms": "Nutzungsbedingungen",
-  "landing.footer.developed_by": "FamTask v1.4.0 · Entwickelt mit ❤️ für Familien · © 2024-2026 albertocosta.info",
+  "landing.footer.developed_by": "FamTask v1.5.0 · Entwickelt mit ❤️ für Familien · © 2024-2026 albertocosta.info",
 
   // ── Legal Pages ─────────────────────────────────────────────────
   "legal.back": "← Zurück",
-  "legal.footer": "FamTask v1.4.0 · © 2024-2026 albertocosta.info",
+  "legal.footer": "FamTask v1.5.0 · © 2024-2026 albertocosta.info",
   "legal.privacy.title": "Datenschutz – FamTask",
   "legal.privacy.h1": "Datenschutzerklärung",
   "legal.privacy.status": "Stand: Juli 2026",

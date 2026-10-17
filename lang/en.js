@@ -133,7 +133,7 @@ window._langData = {
   "auth.invalid_code": "Invalid code",
   "auth.connection_error": "Connection error",
   "auth.default_family": "My Family",
-  "auth.privacy": "v1.4.0 · Your data stays private",
+  "auth.privacy": "v1.5.0 · Your data stays private",
   "app.description": "Family task app for Santiago and Samuel",
 
   "home.who_are_you": "Who are you?",
@@ -678,11 +678,11 @@ window._langData = {
   "landing.footer.contact": "Contact",
   "landing.footer.privacy": "Privacy",
   "landing.footer.terms": "Terms of Service",
-  "landing.footer.developed_by": "FamTask v1.4.0 · Made with ❤️ for families · © 2024-2026 albertocosta.info",
+  "landing.footer.developed_by": "FamTask v1.5.0 · Made with ❤️ for families · © 2024-2026 albertocosta.info",
 
   // ── Legal Pages ─────────────────────────────────────────────────
   "legal.back": "← Back",
-  "legal.footer": "FamTask v1.4.0 · © 2024-2026 albertocosta.info",
+  "legal.footer": "FamTask v1.5.0 · © 2024-2026 albertocosta.info",
   "legal.privacy.title": "Privacy Policy – FamTask",
   "legal.privacy.h1": "Privacy Policy",
   "legal.privacy.status": "Effective: July 2026",
