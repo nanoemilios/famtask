@@ -57,6 +57,8 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
   Ein von Hand abgelegtes Cover bleibt unangetastet.
 - Neuer Endpunkt `jukebox.php?action=tagcover` liefert das eingebettete Bild
   einer einzelnen Datei.
+- Findet sich kein Album-Cover, wird für den einzelnen Titel gesucht. So bekommen
+  Sammlungs-Ordner wie „Mami" trotzdem das Cover der enthaltenen Singles.
 
 ### Geändert
 - Komponenten mit eigenen Eingabefeldern (Modals, Admin, Kind-Screen,
@@ -77,6 +79,21 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
   Bilder und waren die häufigste Ursache für falsche Cover.
 - Gefundene Cover bleiben im Browser gespeichert (`ft-cover-cache`); einmalig
   werden dabei die mit der alten Suchlogik gefundenen Cover verworfen.
+- Dateinamen im Muster `Interpret - Titel (Zusatz)` werden zerlegt. Vorher galt
+  der ganze Dateiname als Titel, weshalb der Vergleich an Zusätzen wie `(Lyrics)`
+  oder `[Official Video]` scheiterte und die Suche nichts mehr fand.
+- Der Ordnername zählt nur dann als Album-Suchbegriff, wenn er wie ein Album
+  aussieht (Ziffer oder mindestens zwei Wörter). „Mami", „Papi", „Samuel" und
+  „Santiago" sind Sammlungen beziehungsweise Vornamen.
+- Album-Treffer werden gegen Interpret **und** Albumname geprüft. Bisher genügte
+  der Albumname: „Hurra Kinderlieder" passte auch auf „Mutonia Kinderlieder
+  Helau Hurra Karneval Faschings Kinderlieder", „Santiago" auf das Album
+  „Santiago" der Chieftains.
+- Die Titel-Suche wird ohne Interpret wiederholt, wenn die Suche mit Interpret
+  nichts liefert (Deezer findet „Nuria Fergó y Manu Tenorio Noches de Bohemia"
+  nicht, „Noches de Bohemia" schon).
+- MusicBrainz wird nur noch mit einem aussagekräftigen Suchbegriff befragt
+  (Serienname statt eines einzelnen Wortes wie „Der Zoo").
 
 ### Behoben
 - Cover-Autoloaden der Jukebox lieferte nie sichtbare Cover
@@ -85,6 +102,14 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
   Bei Dateien wie `01 - Hexerei.mp3` wurde deshalb nur die Tracknummer `01`
   gesucht – und die Suche lieferte irgendein fremdes Bild. Zusätzlich fehlte
   jede Prüfung, ob der Treffer überhaupt zum Titel oder Album passt.
+- **Falsche Cover bei Sammlungs-Ordnern:** Enthielt ein Ordner nur einen Namen
+  wie „Mami" oder „Papi", lieferte die Album-Suche irgendein gleichnamiges
+  Album (etwa „Mami - Single" von Emmanuel Cortes) und zeigte es als Cover des
+  Titels an. Solche Ordner werden jetzt nicht mehr als Album gesucht; stattdessen
+  wird der Titel gesucht und das Cover verifiziert.
+- **Falsche Cover bei Duetten:** Die Interpret-Prüfung verlangte volle
+  Übereinstimmung. „Nuria Fergó" wurde deshalb zu „Nuria Fergó y Manu Tenorio"
+  abgelehnt und das richtige Cover verworfen.
 - 403 eines WebDAV-Servers wurde als 502 gemeldet statt als 401
 - Zwei Player gleichzeitig auf dem Jukebox-Screen
 - Versionsanzeige stand in Login, Footer und Rechtstexten noch auf `v1.4.0`

@@ -589,19 +589,36 @@ exit;
 
 /** Sucht ein passendes Cover zu Album/Titel/Interpret. */
 function getCoverForInput(string $albumFolder, string $albumTag, string $title, string $artist): ?string {
+    // Dateiname zerlegen: aus "Lady Gaga, Bruno Mars - Die With A Smile
+    // (Lyrics)" werden Interpret und reiner Titel. Ohne das gilt der ganze
+    // Dateiname als Titel und der Vergleich scheitert an den Zusaetzen.
+    $zerlegt = coverSplitTitle($title);
+    $title   = $zerlegt['title'];
+    if ($artist === '') { $artist = $zerlegt['artist']; }
+
+    // Der Ordnername taugt nur als Album-Suchbegriff, wenn er selbst nach
+    // einem Album aussieht. "Mami", "Papi", "Samuel" oder "Santiago" sind
+    // Sammlungen beziehungsweise Vornamen – die Album-Suche findet dort nur
+    // fremde Alben und Interpreten gleichen Namens.
+    $ordnerIstAlbum = ($albumFolder !== '' && coverFolderIsRelease($albumFolder));
+
     // Erwarteter Name: Ordnername UND ID3-Album zusammen. Der Ordner liefert
     // meist die Serie ("Bibi Blocksberg 12"), das Tag die Folge ("Folge 12:
     // hat Geburtstag"). Erst zusammen ist der Vergleich eindeutig – sonst
-    // passt "Folge 12" auch auf jede andere Serie.
-    $erwartet  = trim($albumFolder . ' ' . (($albumTag !== '' && $albumTag !== $albumFolder) ? $albumTag : ''));
+    // passt "Folge 12" auch auf jede andere Serie. Ist der Ordner nur ein
+    // Name, zählt allein das Tag.
+    $erwartet = $ordnerIstAlbum
+        ? trim($albumFolder . ' ' . (($albumTag !== '' && $albumTag !== $albumFolder) ? $albumTag : ''))
+        : trim($albumTag);
+
     $suchterme = [];
-    if ($albumFolder !== '') $suchterme[] = $albumFolder;
+    if ($ordnerIstAlbum) { $suchterme[] = $albumFolder; }
 
     // Zweiter Versuch: Serie + ID3-Album zusammen. Ordner wie "Benjamin
     // Blümchen 3" und Tag "Folge 3" finden einzeln nichts, "Benjamin Blümchen
     // Folge 3" dagegen schon. Nur wenn der Ordner nicht selbst "Folge/Teil"
     // enthält – sonst wäre der Ordner schon der richtige Suchbegriff.
-    if ($albumTag !== '' && !preg_match('/\b(folge|teil|band|vol|part|cd)\b/i', $albumFolder)) {
+    if ($albumTag !== '' && $ordnerIstAlbum && !preg_match('/\b(folge|teil|band|vol|part|cd)\b/i', $albumFolder)) {
         $serie = trim((string)preg_replace('/(?<=\D)\s*\d+\s*$/', '', $albumFolder));
         if ($serie !== '' && $serie !== $albumFolder) {
             $kombi = trim($serie . ' ' . $albumTag);
@@ -611,7 +628,9 @@ function getCoverForInput(string $albumFolder, string $albumTag, string $title, 
 
     // Zuletzt das ID3-Album allein (oft nur "Folge 12" – der Ordnername sagt
     // dann nichts und der Treffer wird ueber $erwartet geprueft).
-    if ($albumTag !== '' && $albumTag !== $albumFolder) { $suchterme[] = $albumTag; }
+    if ($albumTag !== '' && $albumTag !== $albumFolder && !in_array($albumTag, $suchterme, true)) {
+        $suchterme[] = $albumTag;
+    }
 
     // 1. Album-Suche – bester Treffer bei Hörspielen und Sammlungen
     foreach ($suchterme as $term) {
@@ -629,8 +648,43 @@ function getCoverForInput(string $albumFolder, string $albumTag, string $title, 
         if ($url) return $url;
     }
 
-    // 3. MusicBrainz/Cover Art Archive als letzter Versuch
-    return getCoverFromMusicBrainz($erwartet !== '' ? $erwartet : $title);
+    // 3. MusicBrainz/Cover Art Archive als letzter Versuch. Nur mit einem
+    // aussagekraeftigen Suchbegriff: "Der Zoo" oder "Mami" allein findet dort
+    // jedes gleichnamige Werk; der Serien-Name dagegen trifft das richtige.
+    if (coverFolderIsRelease($albumFolder, $albumTag) && $erwartet !== '') {
+        return getCoverFromMusicBrainz($erwartet);
+    }
+    return getCoverFromMusicBrainz($title !== '' ? trim($title . ' ' . $artist) : $erwartet);
+}
+
+/**
+ * Dateinamen in Interpret und Titel zerlegen.
+ *
+ * "Lady Gaga, Bruno Mars - Die With A Smile (Lyrics)" ergibt Interpret
+ * "Lady Gaga, Bruno Mars" und Titel "Die With A Smile". "01 - Hexerei"
+ * ergibt keinen Interpreten, aber den Titel "Hexerei".
+ */
+function coverSplitTitle(string $raw): array {
+    $s = trim($raw);
+    $s = (string)preg_replace('/\.[a-z0-9]{2,4}$/i', '', $s);            // Endung
+    $s = str_replace('_', ' ', $s);
+    $s = (string)preg_replace('/[\(\[]([^\)\]]*)[\)\]]/u', ' ', $s);    // (Lyrics), [Official Video]
+    $s = (string)preg_replace('/[\(\[]([^\)\]]*)$/u', ' ', $s);          // abgeschnittene Klammer
+    $s = trim((string)preg_replace('/\s+/u', ' ', $s));
+
+    $artist = ''; $title = $s;
+    if (preg_match('/^(.{2,60}?)\s+[-\x{2013}\x{2014}]\s+(.+)$/u', $s, $m)) {
+        $links = trim($m[1]);
+        $rechts = trim($m[2]);
+        if ($rechts !== '') {
+            if (preg_match('/^(track|titel|title|song|teil)?\s*\d+$/i', $links)) {
+                $title = $rechts;                 // "01 - Hexerei" -> nur der Titel
+            } else {
+                $artist = $links; $title = $rechts;
+            }
+        }
+    }
+    return ['artist' => $artist, 'title' => $title];
 }
 
 /** Vergleichsform eines Namens: klein, Umlaute aufgelöst, nur Wortzeichen. */
@@ -680,6 +734,75 @@ function coverNameScore(string $want, string $have): float {
     return max($jaccard, $coverage * 0.85);
 }
 
+/**
+ * Album-Treffer bewerten: Interpret und Albumname getrennt prüfen.
+ *
+ * Die Album-Suche liefert zu "Mami" oder "Santiago" beliebige Alben gleichen
+ * Namens ("The Chieftains – Santiago", "Mutonia Kinderlieder – … Hurra …").
+ * Solche Treffer fallen hier durch: der Interpret des Funds muss im gesuchten
+ * Namen aufgehen ("Benjamin Blümchen" in "Benjamin Blümchen 3 Folge 3").
+ */
+function coverAlbumScore(string $erwartet, string $artistName, string $albumName): float {
+    if ($artistName !== '') {
+        $at = array_values(array_unique(explode(' ', coverNorm($artistName))));
+        $et = array_values(array_unique(explode(' ', coverNorm($erwartet))));
+        if ($at && $et) {
+            $treffer = count(array_intersect($at, $et));
+            if ($treffer / count($at) < 0.6) return 0.0;
+        }
+    }
+    return coverNameScore($erwartet, trim($artistName . ' ' . $albumName));
+}
+
+/**
+ * Sieht der Ordnername nach einem Album aus ("Bibi Blocksberg 12", "Folge 3")
+ * oder nur nach einem Namen ("Mami", "Papi")?
+ */
+function coverFolderIsRelease(string $folder, string $albumTag = ''): bool {
+    $folder = trim($folder);
+    if ($folder === '') return false;
+    if ($albumTag !== '' && $albumTag !== $folder) return true;   // Metadaten bestätigen ein Album
+    if (preg_match('/\d/', $folder)) return true;                 // "Folge 12", "Band 3"
+    return count(preg_split('/\s+/u', $folder, -1, PREG_SPLIT_NO_EMPTY)) >= 2;
+}
+
+/** Anteil der Wörter von $want, die in $have vorkommen (0.0 bis 1.0). */
+function coverCoverage(string $want, string $have): float {
+    $a = coverNorm($want);
+    $b = coverNorm($have);
+    if ($a === '' || $b === '') return 0.0;
+    if ($a === $b) return 1.0;
+    $ta = array_values(array_unique(explode(' ', $a)));
+    $tb = array_values(array_unique(explode(' ', $b)));
+    foreach ($ta as $wort) {
+        if (ctype_digit($wort) && !in_array($wort, $tb, true)) return 0.0;
+    }
+    return count(array_intersect($ta, $tb)) / count($ta);
+}
+
+/**
+ * Passt der Interpret? Auch teilweise: bei Duetten führt iTunes oft nur einen
+ * der beiden ("Nuria Fergó" für "Nuria Fergó y Manu Tenorio").
+ */
+function coverArtistOk(string $want, string $have): bool {
+    if ($want === '' || $have === '') return true;        // nichts zu prüfen
+    if (coverCoverage($have, $want) >= 0.9) return true;  // Fund steckt im Gesuchten
+    return coverNameScore($want, $have) >= 0.5;
+}
+
+/**
+ * Reicht der Titelvergleich als Treffer?
+ *
+ * Normal gilt die Schwelle 0,70. Bei Titeln mit Zusatz im Fund – etwa
+ * "MY NEW LIFE (GIGI DAG & Luca Noise)" – genügt ein passender Interpret,
+ * sofern der gesuchte Titel vollständig enthalten ist.
+ */
+function coverTitleHits(string $title, string $trackName, string $artist, string $candArtist): bool {
+    if (coverNameScore($title, $trackName) >= 0.70) return true;
+    if ($artist === '' || !coverArtistOk($artist, $candArtist)) return false;
+    return coverCoverage($title, $trackName) >= 0.9;
+}
+
 /** 100x100-URL der iTunes-API auf 600x600 anheben. */
 function itunesArtwork(string $url): string {
     $big = preg_replace('#/\d+x\d+bb\.(jpg|png)$#i', '/600x600bb.$1', $url);
@@ -699,8 +822,7 @@ function getCoverFromItunesAlbum(string $term, string $erwartet): ?string {
             if (empty($r['artworkUrl100'])) continue;
             // Bei Hörspielen steht der Serienname im Interpret, der Albumname
             // ist nur "Folge 12: …" – deshalb beides zusammen vergleichen.
-            $name = trim((string)($r['artistName'] ?? '') . ' ' . (string)($r['collectionName'] ?? ''));
-            $s = coverNameScore($erwartet, $name);
+            $s = coverAlbumScore($erwartet, (string)($r['artistName'] ?? ''), (string)($r['collectionName'] ?? ''));
             if ($s > $bestScore) { $bestScore = $s; $best = $r; }
         }
         if (!$best || $bestScore < 0.62) return null;   // kein ausreichend ähnlicher Treffer
@@ -713,22 +835,30 @@ function getCoverFromItunesAlbum(string $term, string $erwartet): ?string {
 /** iTunes: Titel-Suche (mit Interpret, sofern angegeben). */
 function getCoverFromItunesSong(string $title, string $artist): ?string {
     try {
-        $term = trim(($artist !== '' ? $artist . ' ' : '') . $title);
-        $json = jbHttpGet('https://itunes.apple.com/search?term=' . urlencode($term) . '&limit=15&entity=song', 5);
-        if (!$json) return null;
-        $data = json_decode($json, true);
-        if (empty($data['results']) || !is_array($data['results'])) return null;
+        // Erst mit Interpret, dann nur mit dem Titel. Manche Interpreten –
+        // Duette, Sonderzeichen – liefern sonst überhaupt keine Treffer.
+        $terme = [trim(($artist !== '' ? $artist . ' ' : '') . $title)];
+        if ($artist !== '') { $terme[] = $title; }
 
-        $best = null; $bestScore = 0.0;
-        foreach ($data['results'] as $r) {
-            if (empty($r['artworkUrl100'])) continue;
-            $tScore = coverNameScore($title, (string)($r['trackName'] ?? ''));
-            if ($tScore < 0.70) continue;
-            if ($artist !== '' && !empty($r['artistName']) && coverNameScore($artist, (string)$r['artistName']) < 0.5) continue;
-            if ($tScore > $bestScore) { $bestScore = $tScore; $best = $r; }
+        foreach (array_unique(array_filter($terme, fn($t) => $t !== '')) as $term) {
+            $json = jbHttpGet('https://itunes.apple.com/search?term=' . urlencode($term) . '&limit=15&entity=song', 5);
+            if (!$json) continue;
+            $data = json_decode($json, true);
+            if (empty($data['results']) || !is_array($data['results'])) continue;
+
+            $best = null; $bestScore = 0.0;
+            foreach ($data['results'] as $r) {
+                if (empty($r['artworkUrl100'])) continue;
+                $tName = (string)($r['trackName'] ?? '');
+                $aName = (string)($r['artistName'] ?? '');
+                if (!coverTitleHits($title, $tName, $artist, $aName)) continue;
+                if (!coverArtistOk($artist, $aName)) continue;
+                $s = max(coverNameScore($title, $tName), coverCoverage($title, $tName) * 0.9);
+                if ($s > $bestScore) { $bestScore = $s; $best = $r; }
+            }
+            if ($best) return itunesArtwork((string)$best['artworkUrl100']);
         }
-        if (!$best) return null;
-        return itunesArtwork((string)$best['artworkUrl100']);
+        return null;
     } catch (Exception $e) {
         return null;
     }
@@ -744,8 +874,7 @@ function getCoverFromDeezerAlbum(string $term, string $erwartet): ?string {
 
         $best = null; $bestScore = 0.0;
         foreach ($data['data'] as $r) {
-            $name = trim((string)($r['artist']['name'] ?? '') . ' ' . (string)($r['title'] ?? ''));
-            $s = coverNameScore($erwartet, $name);
+            $s = coverAlbumScore($erwartet, (string)($r['artist']['name'] ?? ''), (string)($r['title'] ?? ''));
             if ($s > $bestScore) { $bestScore = $s; $best = $r; }
         }
         if (!$best || $bestScore < 0.62) return null;
@@ -758,23 +887,33 @@ function getCoverFromDeezerAlbum(string $term, string $erwartet): ?string {
 /** Deezer: Titel-Suche (mit Interpret, sofern angegeben). */
 function getCoverFromDeezerTrack(string $title, string $artist): ?string {
     try {
-        $q = trim(($artist !== '' ? $artist . ' ' : '') . $title);
-        $json = jbHttpGet('https://api.deezer.com/search?q=' . urlencode($q) . '&limit=15', 5);
-        if (!$json) return null;
-        $data = json_decode($json, true);
-        if (empty($data['data']) || !is_array($data['data'])) return null;
+        // Zweiter Versuch ohne Interpret: die Deezer-Suche ist streng und
+        // findet "Nuria Fergó y Manu Tenorio Noches de Bohemia" nicht,
+        // "Noches de Bohemia" dagegen schon.
+        $terme = [trim(($artist !== '' ? $artist . ' ' : '') . $title)];
+        if ($artist !== '') { $terme[] = $title; }
 
-        $best = null; $bestScore = 0.0;
-        foreach ($data['data'] as $r) {
-            $tScore = coverNameScore($title, (string)($r['title'] ?? ''));
-            if ($tScore < 0.70) continue;
-            $rArtist = (string)($r['artist']['name'] ?? '');
-            if ($artist !== '' && $rArtist !== '' && coverNameScore($artist, $rArtist) < 0.5) continue;
-            if ($tScore > $bestScore) { $bestScore = $tScore; $best = $r; }
+        foreach (array_unique(array_filter($terme, fn($t) => $t !== '')) as $q) {
+            $json = jbHttpGet('https://api.deezer.com/search?q=' . urlencode($q) . '&limit=25', 5);
+            if (!$json) continue;
+            $data = json_decode($json, true);
+            if (empty($data['data']) || !is_array($data['data'])) continue;
+
+            $best = null; $bestScore = 0.0;
+            foreach ($data['data'] as $r) {
+                $tName = (string)($r['title'] ?? '');
+                $aName = (string)($r['artist']['name'] ?? '');
+                if (!coverTitleHits($title, $tName, $artist, $aName)) continue;
+                if (!coverArtistOk($artist, $aName)) continue;
+                $s = max(coverNameScore($title, $tName), coverCoverage($title, $tName) * 0.9);
+                if ($s > $bestScore) { $bestScore = $s; $best = $r; }
+            }
+            if ($best) {
+                $cov = $best['album']['cover_big'] ?? $best['album']['cover_medium'] ?? $best['album']['cover'] ?? null;
+                if ($cov) return $cov;
+            }
         }
-        if (!$best) return null;
-        $cov = $best['album']['cover_big'] ?? $best['album']['cover_medium'] ?? $best['album']['cover'] ?? null;
-        return $cov ?: null;
+        return null;
     } catch (Exception $e) {
         return null;
     }

@@ -1816,7 +1816,13 @@ const AudioPlayerScreen = () => {
           albumCovers[t.album] = url || '';
           if (url) setAlbumCover(t.album, url);
         }
-        if (albumCovers[t.album]) setCoverToList(t, albumCovers[t.album]);
+        if (albumCovers[t.album]) { setCoverToList(t, albumCovers[t.album]); continue; }
+        // Kein Album gefunden – der Ordner ist dann kein Album, sondern nur
+        // eine Sammlung ("Mami", "Papi"). Deshalb nach dem Titel suchen; der
+        // Dateiname "Interpret - Titel (Zusatz)" wird serverseitig zerlegt.
+        // Gilt nur für diesen einen Titel, nicht für das ganze Album.
+        const turl = await searchCover('ttl:'+coverTitleOf(t).toLowerCase(), { title: coverTitleOf(t), artist: t.artist });
+        if (turl) setCoverToList(t, turl);
       }
     } finally { _coversBusy = false; }
   };
