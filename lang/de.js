@@ -60,6 +60,14 @@ window._langData = {
   "common.jpg_or_png": "JPG oder PNG, max. 5 MB",
   "common.replaces_emoji": "Ersetzt das Emoji-Icon",
   "common.remove": "Entfernen",
+  // ── Barrierefreiheit ──
+  "a11y.skip": "Zum Inhalt springen",
+  "a11y.edit": "Bearbeiten",
+  "a11y.delete": "Löschen",
+  "a11y.close": "Schließen",
+  "a11y.copy_code": "Familiencode kopieren",
+  "a11y.menu": "Menü",
+
   "common.or_custom": "Oder eigene Zahl eingeben…",
   "common.all": "Alle",
   "common.minutes_short": "Min",

@@ -21,6 +21,19 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
   PWA (Chrome/Edge/Android) erhalten bleibt – weiterhin ohne Caching
 - `tools/build_icons.py` erzeugt das Set reproduzierbar aus einer Geometrie
 
+**Barrierefreiheit & Design-Feinschliff**
+- Marken-Icon statt ✨ in Kopfzeile und Login, links neben der Wortmarke
+- `<main>`-Landmark und „Zum Inhalt springen“-Link; Zoom im Browser wieder
+  erlaubt (`viewport-fit=cover` statt `user-scalable=no`)
+- Sichtbare Fokusringe für Tastaturbedienung (`:focus-visible`)
+- `prefers-reduced-motion` wird respektiert, Safe-Area für Notch/Home-Indikator
+- Alle Formularfelder haben Programmnamen (`aria-label`), Icons-Buttons wie
+  ✏️/🗑️/📋 sind für Screenreader benannt
+- Kind-Karten sind per Tastatur bedienbar (`role="button"`, Enter/Leertaste)
+- Kontraste über alle Ansichten angehoben (u. a. Hinweise, Metadaten,
+  inaktive Filter, ausgewählte Tage/Chips mit dunkler Schrift)
+- Neue Übersetzungsschlüssel `a11y.*` in Deutsch und Englisch
+
 ## [1.5.0] – 2026-10-15
 
 ### Hinzugefügt
