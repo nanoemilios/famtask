@@ -142,6 +142,26 @@ dürfen. Standard: `/mnt,/media,/srv,/net,/Volumes`.
 Zugangsdaten externer Musikquellen liegen ausschliesslich in der Datenbank
 und werden von `remote.php` nie an den Client zurückgegeben.
 
+## Icons und Web-App-Manifest
+
+Das Favicon-/App-Icon-Set liegt komplett in `icons/` und wird nicht von Hand
+gepflegt, sondern aus der Geometrie in `tools/build_icons.py` erzeugt:
+
+```bash
+python3 tools/build_icons.py                  # komplettes Set nach icons/
+python3 tools/build_icons.py --favicon-only   # nur Favicon/iOS (Landingpage)
+```
+
+Erzeugt werden: `favicon.ico` (16–64 px), `favicon.svg`, PNG-Favicons in
+16/32/48 px, `apple-touch-icon.png` (180 px, randlos für iOS), PWA-Icons in
+192/512 px für `any` und `maskable` (Safe-Zone 78 %) sowie
+`safari-pinned-tab.svg`. Voraussetzung: Pillow und Chrome headless
+(`CHROME` überschreibbar, Standard `~/.local/opt/chrome-headless-shell/`).
+
+`manifest.json` verweist auf diese Dateien; `sw.js` ist ein absichtlich
+cacheloser Service Worker mit leerem `fetch`-Handler, damit die App in Chrome,
+Edge und Android als PWA installierbar bleibt.
+
 ## Verwandte Repositories
 
 - **famtask_installer** – Web-basierter Installer/Updater

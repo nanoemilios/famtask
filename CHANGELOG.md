@@ -7,6 +7,20 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ---
 
+## [Unveröffentlicht]
+
+### Geändert
+
+**Icon & PWA**
+- Neues Favicon-/App-Icon: F und Haken als getrennte Formen auf der
+  Marken-Kachel (Gradient `#FF6B6B` → `#FFE66D`, Grund `#0D0E1A`)
+- Vollständiges Set in `icons/`: `favicon.ico` (16–64 px), `favicon.svg`,
+  PNG-Favicons, `apple-touch-icon.png` (iOS) und `safari-pinned-tab.svg`
+- `manifest.json` mit 192/512-px-Icons für `any` und `maskable` (Safe-Zone)
+- `sw.js` hat einen leeren `fetch`-Handler, damit die Installierbarkeit als
+  PWA (Chrome/Edge/Android) erhalten bleibt – weiterhin ohne Caching
+- `tools/build_icons.py` erzeugt das Set reproduzierbar aus einer Geometrie
+
 ## [1.5.0] – 2026-10-15
 
 ### Hinzugefügt

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>FamTask</title>
+  <g fill="#000000">
+    <rect x="7.8" y="7.2" width="4.9" height="17.0" rx="2.45"/>
+    <rect x="7.8" y="7.2" width="11.4" height="4.9" rx="2.45"/>
+    <rect x="7.8" y="14.0" width="7.4" height="4.5" rx="2.25"/>
+  </g>
+  <path d="M17.8 20.6l2.8 2.8 5.6-6.7" fill="none" stroke="#000000" stroke-width="4.1"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

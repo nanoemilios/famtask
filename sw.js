@@ -8,4 +8,6 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
 
-// Kein spezielles Fetch-Caching → Standardverhalten.
+// Bewusst kein Caching: Der leere Handler lässt jede Anfrage direkt ans Netz
+// gehen, erfüllt aber die Installierbarkeits-Vorgabe der Browser (PWA).
+self.addEventListener('fetch', () => {});
