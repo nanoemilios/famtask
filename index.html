@@ -50,11 +50,14 @@
   <script>
     (function(){
       var lang = localStorage.getItem('ft_lang');
+      if (lang && !/^[a-z]{2}$/.test(lang)) lang = null;
       if (lang) { window._lang = lang; document.documentElement.lang = lang; }
+      // Sprache synchron laden, damit schon der erste Aufruf richtig rendert.
+      // document.write ist an dieser Stelle erlaubt (Skript laeuft waehrend des
+      // Parsens) und hat gegenueber XHR einen Vorteil: der Service Worker kann
+      // die Datei aus dem Cache liefern – die Sprache funktioniert also offline.
       if (lang && lang !== 'de') {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'lang/' + lang + '.js', false);
-        try { xhr.send(); if (xhr.status === 200) eval(xhr.responseText); } catch(e){}
+        document.write('<script src="lang/' + lang + '.js"><\/script>');
       }
       var m = document.querySelector('meta[name="description"]');
       if (m && window.t) m.content = window.t('app.description');
@@ -109,9 +112,13 @@
   </script>
 
   <script>
-    // Service Worker
+    // Service Worker: App-Shell-Cache (Strategie siehe sw.js).
+    // updateViaCache:'none' – sw.js wird nie aus dem HTTP-Cache gelesen,
+    // damit ein neuer Cache-Stand sofort greift.
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});
+      });
     }
 
     // ── PWA Install State ────────────────────────────────────────────────────

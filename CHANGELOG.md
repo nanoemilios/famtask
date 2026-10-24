@@ -17,8 +17,8 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 - Vollständiges Set in `icons/`: `favicon.ico` (16–64 px), `favicon.svg`,
   PNG-Favicons, `apple-touch-icon.png` (iOS) und `safari-pinned-tab.svg`
 - `manifest.json` mit 192/512-px-Icons für `any` und `maskable` (Safe-Zone)
-- `sw.js` hat einen leeren `fetch`-Handler, damit die Installierbarkeit als
-  PWA (Chrome/Edge/Android) erhalten bleibt – weiterhin ohne Caching
+- PWA bleibt installierbar (Chrome/Edge/Android); das Caching übernimmt jetzt
+  der Service Worker (siehe „Ladezeit“)
 - `tools/build_icons.py` erzeugt das Set reproduzierbar aus einer Geometrie
 
 **Barrierefreiheit & Design-Feinschliff**
@@ -49,6 +49,17 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 - `app.js` bekommt einen Inhalts-Hash als `?v=…`, damit nach einem Update
   nicht die alte Datei aus dem Browser-Cache läuft
 - Auf dem Webserver sind weiterhin weder Node noch npm nötig
+- `.htaccess` liefert gzip für HTML/CSS/JS/JSON/SVG und setzt Cache-Dauern:
+  ein Jahr für Icons und Schriften (`immutable`), eine Woche für CSS/JS,
+  `no-cache` für HTML und `sw.js`, `no-store` für PHP
+- Service Worker mit App-Shell-Cache: `index.html` kommt netzwerk-zuerst
+  (Updates kommen an), alle App-Dateien aus dem Cache. Beim Wiederbesuch
+  entsteht für das Gerüst kein Netzverkehr mehr, die App startet auch offline
+- Sprachdatei lädt `index.html` per `document.write` statt synchronem XHR;
+  dadurch liefert der Service Worker sie aus dem Cache, und die App startet
+  offline in der zuletzt gewählten Sprache
+- `.htaccess` bleibt die Apache-Variante; die nginx-Entsprechung steht in
+  `famtask_docs/DEPLOYMENT.md`
 
 **Design-System & Social-Sharing**
 - Design-Tokens in `styles.css` (`:root`): Farben, Verläufe, Text- und

@@ -180,9 +180,16 @@ Erzeugt werden: `favicon.ico` (16–64 px), `favicon.svg`, PNG-Favicons in
 `safari-pinned-tab.svg`. Voraussetzung: Pillow und Chrome headless
 (`CHROME` überschreibbar, Standard `~/.local/opt/chrome-headless-shell/`).
 
-`manifest.json` verweist auf diese Dateien; `sw.js` ist ein absichtlich
-cacheloser Service Worker mit leerem `fetch`-Handler, damit die App in Chrome,
-Edge und Android als PWA installierbar bleibt.
+`manifest.json` verweist auf diese Dateien. `sw.js` legt das App-Gerüst
+(`index.html`, `app.js`, Styles, Schriften, Icons) im Cache ab: Seitenaufrufe
+kommen zuerst aus dem Netz (damit Updates ankommen), Dateien zuerst aus dem
+Cache; `api.php`, `jukebox.php` und `remote.php` werden nie gecacht. Dadurch
+startet die App beim Wiederbesuch ohne Netzverkehr und funktioniert offline.
+Nach einem Release `CACHE_VERSION` in `sw.js` erhöhen – dann wird der alte
+Cache gelöscht.
+
+Kompression und Cache-Dauern setzt `.htaccess` (Apache). Für nginx steht der
+passende Block in [famtask_docs/DEPLOYMENT.md](https://github.com/nanoemilios/famtask_docs/blob/main/DEPLOYMENT.md).
 
 ## Verwandte Repositories
 

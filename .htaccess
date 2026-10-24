@@ -2,6 +2,7 @@
 # Kompatibel mit Apache 2.4 (aktueller Standard aller gängigen Webhoster).
 # Hinweis für nginx-Hoster: .htaccess wird dort ignoriert. Die Konfigdatei ist
 # zusätzlich per PHP-Guard geschützt (Direktzugriff ohne FAMTASK-Define → 403).
+# Die passende nginx-Konfiguration steht in famtask_docs/DEPLOYMENT.md.
 
 Options -Indexes
 DirectoryIndex index.html index.php
@@ -11,3 +12,60 @@ DirectoryIndex index.html index.php
 <FilesMatch "^\.famtask_cfg\.php$">
   Require all denied
 </FilesMatch>
+
+<IfModule mod_mime.c>
+  AddType font/woff2 .woff2
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
+# ── Kompression ────────────────────────────────────────────────────────────
+# woff2 ist bereits komprimiert und bleibt aussen vor.
+<IfModule mod_deflate.c>
+  <IfModule mod_filter.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE application/manifest+json image/svg+xml
+  </IfModule>
+</IfModule>
+
+# ── Cache-Dauern ───────────────────────────────────────────────────────────
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 hour"
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 week"
+  ExpiresByType application/javascript "access plus 1 week"
+  ExpiresByType application/json "access plus 0 seconds"
+  ExpiresByType application/manifest+json "access plus 1 day"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/x-icon "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  # CSS/JS eine Woche …
+  <FilesMatch "\.(?:css|js)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+
+  # … ausser dem Service Worker: der muss bei jedem Aufruf geprüft werden.
+  <FilesMatch "^sw\.js$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+
+  # HTML immer revalidieren, damit Updates ankommen.
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+
+  # API-Antworten enthalten Familiendaten: nie speichern.
+  <FilesMatch "\.php$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+  </FilesMatch>
+
+  # Bilder und Schriften aendern sich nie unter demselben Namen.
+  <FilesMatch "\.(?:png|svg|ico|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
