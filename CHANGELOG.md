@@ -34,6 +34,17 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
   inaktive Filter, ausgewählte Tage/Chips mit dunkler Schrift)
 - Neue Übersetzungsschlüssel `a11y.*` in Deutsch und Englisch
 
+**Design-System & Social-Sharing**
+- Design-Tokens in `styles.css` (`:root`): Farben, Verläufe, Text- und
+  Linienwerte, Radien und Schatten an einer Stelle; über 140 Verwendungen
+  nutzen jetzt `var(--ft-…)`
+- Einheitliche Buttons und Karten: 44 px Mindesthöhe, gleiche Radien,
+  Hover-/Aktiv-Zustände, deaktivierte Buttons sichtbar unterscheidbar
+- Geteilte Links zeigen eine Vorschau: `icons/og-image.png` (1200×630) plus
+  Open-Graph- und Twitter-Meta; das Bild entsteht reproduzierbar über
+  `tools/build_og.py`
+- `vendor/fonts/README.md` dokumentiert Herkunft und OFL-Lizenz der Schriften
+
 ## [1.5.0] – 2026-10-15
 
 ### Hinzugefügt
