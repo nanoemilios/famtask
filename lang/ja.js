@@ -57,12 +57,19 @@ window._langData = {
   "common.jpg_or_png": "JPGまたはPNG、最大5MB",
   "common.replaces_emoji": "絵文字アイコンを置き換えます",
   "common.remove": "削除する",
+  "common.edit": "編集",
+  "a11y.skip": "コンテンツへスキップ",
+  "a11y.edit": "編集",
+  "a11y.delete": "削除",
+  "a11y.close": "閉じる",
+  "a11y.copy_code": "ファミリーコードをコピー",
+  "a11y.menu": "メニュー",
   "common.or_custom": "またはカスタム数字を入力…",
   "common.all": "すべて",
   "common.minutes_short": "分",
   "common.min_short": "'",
   "common.hour_short": "時間",
-  "common.o_clock": "時",
+  "common.o_clock": "",
 
   "days.sun": "日",
   "days.mon": "月",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "獲得した分数",
   "child.total_saved": "合計貯蓄",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "週間額 (CHF)",  "child.start_pocket": "開始残高 (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "週間額 (CHF)",
+  "child.start_pocket": "開始残高 (CHF)",
   "child.today": "今日",
   "child.tasks": "タスク",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes}分 — {title}",
   "fines.add_btn": "+ 罰金を追加",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "お金",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "お金",
   "money.balance": "残高",
   "money.weekly_hint": "週間額: {amount}",
   "money.pay_out": "支払う · {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "罰金",
   "money.no_money_fines": "罰金は設定されていません",
   "money.history": "取引履歴",
-  "money.no_history": "まだ記録がありません",  "fine.money_penalty": "控除 (CHF)",  "fine.penalty_hint": "0 = 控除なし。お金の控除は適用時に保護者のPINが必要です。",  "fines.applied_money": "⚠️ −{minutes}分 · −{money} — {title}",
+  "money.no_history": "まだ記録がありません",
+  "fine.money_penalty": "控除 (CHF)",
+  "fine.penalty_hint": "0 = 控除なし。お金の控除は適用時に保護者のPINが必要です。",
+  "fines.applied_money": "⚠️ −{minutes}分 · −{money} — {title}",
 
   "fine.add": "罰金を追加",
   "fine.edit": "罰金を編集",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 Googleカレンダーを埋め込む",
   "admin.google_calendar_desc": "Googleカレンダー → 設定 → 「公開iCal URL」をコピーして、次に貼り付けてください: ",
   "admin.api_php_section": "api.php → iCalセクション",
-  "admin.enter_text": "",
+  "admin.enter_text": " を開いて保存すると、予定が自動的に取り込まれます。",
   "admin.open_admin_panel": "🗄️ 管理パネルを開く",
   "admin.kids": "子ども",
   "admin.media_type_add": "+ メディア種類を追加",

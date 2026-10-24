@@ -57,6 +57,13 @@ window._langData = {
   "common.jpg_or_png": "JPG atau PNG, maks 5 MB",
   "common.replaces_emoji": "Mengganti ikon emoji",
   "common.remove": "Hapus",
+  "common.edit": "Edit",
+  "a11y.skip": "Lewati ke konten",
+  "a11y.edit": "Edit",
+  "a11y.delete": "Hapus",
+  "a11y.close": "Tutup",
+  "a11y.copy_code": "Salin kode keluarga",
+  "a11y.menu": "Menu",
   "common.or_custom": "Atau masukkan angka kustom…",
   "common.all": "Semua",
   "common.minutes_short": "mnt",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "Menit diperoleh",
   "child.total_saved": "Total disimpan",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "Jumlah mingguan (CHF)",  "child.start_pocket": "Saldo awal (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "Jumlah mingguan (CHF)",
+  "child.start_pocket": "Saldo awal (CHF)",
   "child.today": "Hari ini",
   "child.tasks": "Tugas",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} mnt — {title}",
   "fines.add_btn": "+ Tambah denda",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "Uang",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "Uang",
   "money.balance": "Saldo",
   "money.weekly_hint": "Jumlah mingguan: {amount}",
   "money.pay_out": "Bayar · {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "Denda uang",
   "money.no_money_fines": "Belum ada denda uang",
   "money.history": "Mutasi",
-  "money.no_history": "Belum ada transaksi",  "fine.money_penalty": "Potongan (CHF)",  "fine.penalty_hint": "0 = tanpa potongan. Denda uang meminta PIN orang tua.",  "fines.applied_money": "⚠️ -{minutes} mnt · -{money} — {title}",
+  "money.no_history": "Belum ada transaksi",
+  "fine.money_penalty": "Potongan (CHF)",
+  "fine.penalty_hint": "0 = tanpa potongan. Denda uang meminta PIN orang tua.",
+  "fines.applied_money": "⚠️ -{minutes} mnt · -{money} — {title}",
 
   "fine.add": "Tambah denda",
   "fine.edit": "Edit denda",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 Sematkan Google Kalender",
   "admin.google_calendar_desc": "Di Google Kalender → Pengaturan → salin «URL iCal Publik» dan tempelkan ke ",
   "admin.api_php_section": "api.php → bagian iCal",
-  "admin.enter_text": ".",
+  "admin.enter_text": " lalu simpan. Acara kemudian diimpor secara otomatis.",
   "admin.open_admin_panel": "🗄️ Buka panel admin",
   "admin.kids": "Anak",
   "admin.media_type_add": "+ Tambah jenis media",

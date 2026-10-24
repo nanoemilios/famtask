@@ -57,6 +57,13 @@ window._langData = {
   "common.jpg_or_png": "JPG ou PNG, máx. 5 MB",
   "common.replaces_emoji": "Substitui o ícone emoji",
   "common.remove": "Remover",
+  "common.edit": "Editar",
+  "a11y.skip": "Ir para o conteúdo",
+  "a11y.edit": "Editar",
+  "a11y.delete": "Eliminar",
+  "a11y.close": "Fechar",
+  "a11y.copy_code": "Copiar código da família",
+  "a11y.menu": "Menu",
   "common.or_custom": "Ou insira um número personalizado…",
   "common.all": "Todos",
   "common.minutes_short": "min",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "Minutos ganhos",
   "child.total_saved": "Total economizado",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "Valor semanal (CHF)",  "child.start_pocket": "Saldo inicial (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "Valor semanal (CHF)",
+  "child.start_pocket": "Saldo inicial (CHF)",
   "child.today": "Hoje",
   "child.tasks": "Tarefas",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} min — {title}",
   "fines.add_btn": "+ Adicionar multa",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "Dinheiro",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "Dinheiro",
   "money.balance": "Saldo",
   "money.weekly_hint": "Valor semanal: {amount}",
   "money.pay_out": "Pagar · {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "Multas em dinheiro",
   "money.no_money_fines": "Nenhuma multa em dinheiro configurada",
   "money.history": "Extrato",
-  "money.no_history": "Ainda sem movimentos",  "fine.money_penalty": "Dedução (CHF)",  "fine.penalty_hint": "0 = sem dedução. As deduções em dinheiro exigem o PIN dos pais.",  "fines.applied_money": "⚠️ −{minutes} min · −{money} — {title}",
+  "money.no_history": "Ainda sem movimentos",
+  "fine.money_penalty": "Dedução (CHF)",
+  "fine.penalty_hint": "0 = sem dedução. As deduções em dinheiro exigem o PIN dos pais.",
+  "fines.applied_money": "⚠️ −{minutes} min · −{money} — {title}",
 
   "fine.add": "Adicionar multa",
   "fine.edit": "Editar multa",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 Integrar Google Calendar",
   "admin.google_calendar_desc": "No Google Calendar → Configurações → copie o «Endereço público no formato iCal» e cole em ",
   "admin.api_php_section": "api.php → seção iCal",
-  "admin.enter_text": ".",
+  "admin.enter_text": " e guarde. Os eventos são importados automaticamente.",
   "admin.open_admin_panel": "🗄️ Abrir painel de administração",
   "admin.kids": "Crianças",
   "admin.media_type_add": "+ Adicionar tipo de mídia",

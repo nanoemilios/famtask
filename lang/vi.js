@@ -57,6 +57,13 @@ window._langData = {
   "common.jpg_or_png": "JPG hoặc PNG, tối đa 5 MB",
   "common.replaces_emoji": "Thay thế biểu tượng emoji",
   "common.remove": "Xóa",
+  "common.edit": "Sửa",
+  "a11y.skip": "Chuyển đến nội dung",
+  "a11y.edit": "Sửa",
+  "a11y.delete": "Xóa",
+  "a11y.close": "Đóng",
+  "a11y.copy_code": "Sao chép mã gia đình",
+  "a11y.menu": "Menu",
   "common.or_custom": "Hoặc nhập số tùy chỉnh…",
   "common.all": "Tất cả",
   "common.minutes_short": "ph",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "Số phút kiếm được",
   "child.total_saved": "Tổng đã tiết kiệm",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "Số tiền hằng tuần (CHF)",  "child.start_pocket": "Số dư ban đầu (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "Số tiền hằng tuần (CHF)",
+  "child.start_pocket": "Số dư ban đầu (CHF)",
   "child.today": "Hôm nay",
   "child.tasks": "Việc nhà",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} ph — {title}",
   "fines.add_btn": "+ Thêm phạt",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "Tiền",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "Tiền",
   "money.balance": "Số dư",
   "money.weekly_hint": "Số tiền hằng tuần: {amount}",
   "money.pay_out": "Trả · {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "Phạt tiền",
   "money.no_money_fines": "Chưa cấu hình phạt tiền",
   "money.history": "Sao kê",
-  "money.no_history": "Chưa có giao dịch nào",  "fine.money_penalty": "Khấu trừ (CHF)",  "fine.penalty_hint": "0 = không khấu trừ. Phạt tiền yêu cầu PIN của phụ huynh.",  "fines.applied_money": "⚠️ −{minutes} phút · −{money} — {title}",
+  "money.no_history": "Chưa có giao dịch nào",
+  "fine.money_penalty": "Khấu trừ (CHF)",
+  "fine.penalty_hint": "0 = không khấu trừ. Phạt tiền yêu cầu PIN của phụ huynh.",
+  "fines.applied_money": "⚠️ −{minutes} phút · −{money} — {title}",
 
   "fine.add": "Thêm phạt",
   "fine.edit": "Sửa phạt",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 Nhúng Google Calendar",
   "admin.google_calendar_desc": "Trong Google Calendar → Cài đặt → sao chép «Public iCal URL» và dán vào ",
   "admin.api_php_section": "api.php → phần iCal",
-  "admin.enter_text": ".",
+  "admin.enter_text": " rồi lưu. Sự kiện sau đó được nhập tự động.",
   "admin.open_admin_panel": "🗄️ Mở bảng quản trị",
   "admin.kids": "Trẻ em",
   "admin.media_type_add": "+ Thêm loại phương tiện",

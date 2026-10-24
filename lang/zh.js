@@ -60,12 +60,19 @@ window._langData = {
   "common.jpg_or_png": "JPG 或 PNG，最大 5 MB",
   "common.replaces_emoji": "替换表情符号图标",
   "common.remove": "移除",
+  "common.edit": "编辑",
+  "a11y.skip": "跳到内容",
+  "a11y.edit": "编辑",
+  "a11y.delete": "删除",
+  "a11y.close": "关闭",
+  "a11y.copy_code": "复制家庭代码",
+  "a11y.menu": "菜单",
   "common.or_custom": "或输入自定义数字…",
   "common.all": "全部",
   "common.minutes_short": "分钟",
   "common.min_short": "'",
   "common.hour_short": "小时",
-  "common.o_clock": "点",
+  "common.o_clock": "",
 
   // ── Days ──
   "days.sun": "周日",
@@ -156,7 +163,9 @@ window._langData = {
   "child.earned_minutes": "已获得分钟数",
   "child.total_saved": "累计节省",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "每周金额 (CHF)",  "child.start_pocket": "初始余额 (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "每周金额 (CHF)",
+  "child.start_pocket": "初始余额 (CHF)",
   "child.today": "今日",
   "child.tasks": "任务",
   "child.today_progress": "{done}/{total}",
@@ -245,7 +254,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} 分钟 — {title}",
   "fines.add_btn": "+ 添加扣罚",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "金钱",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "金钱",
   "money.balance": "余额",
   "money.weekly_hint": "每周金额：{amount}",
   "money.pay_out": "支付 · {amount}",
@@ -270,7 +280,10 @@ window._langData = {
   "money.fines_title": "金钱罚款",
   "money.no_money_fines": "未设置金钱罚款",
   "money.history": "明细",
-  "money.no_history": "暂无记录",  "fine.money_penalty": "扣除 (CHF)",  "fine.penalty_hint": "0 = 不扣除。金钱罚款在应用时需要家长 PIN。",  "fines.applied_money": "⚠️ -{minutes} 分钟 · -{money} — {title}",
+  "money.no_history": "暂无记录",
+  "fine.money_penalty": "扣除 (CHF)",
+  "fine.penalty_hint": "0 = 不扣除。金钱罚款在应用时需要家长 PIN。",
+  "fines.applied_money": "⚠️ -{minutes} 分钟 · -{money} — {title}",
 
   // ── Fine Modal ──
   "fine.add": "添加扣罚",
@@ -321,7 +334,7 @@ window._langData = {
   "admin.google_calendar": "🔗 嵌入 Google 日历",
   "admin.google_calendar_desc": "在 Google 日历 → 设置 → 复制「公开 iCal 网址」并粘贴到 ",
   "admin.api_php_section": "api.php → iCal 部分",
-  "admin.enter_text": "。",
+  "admin.enter_text": " 并保存。日程随后会自动导入。",
   "admin.open_admin_panel": "🗄️ 打开管理面板",
   "admin.kids": "孩子",
   "admin.media_type_add": "+ 添加媒体类型",

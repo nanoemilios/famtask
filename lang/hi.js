@@ -57,6 +57,13 @@ window._langData = {
   "common.jpg_or_png": "JPG या PNG, अधिकतम 5 MB",
   "common.replaces_emoji": "इमोजी आइकन को बदलता है",
   "common.remove": "हटाएं",
+  "common.edit": "संपादित करें",
+  "a11y.skip": "सामग्री पर जाएँ",
+  "a11y.edit": "संपादित करें",
+  "a11y.delete": "हटाएँ",
+  "a11y.close": "बंद करें",
+  "a11y.copy_code": "परिवार कोड कॉपी करें",
+  "a11y.menu": "मेनू",
   "common.or_custom": "या कोई कस्टम नंबर दर्ज करें…",
   "common.all": "सभी",
   "common.minutes_short": "मिनट",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "अर्जित मिनट",
   "child.total_saved": "कुल बचत",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "साप्ताहिक राशि (CHF)",  "child.start_pocket": "शुरुआती शेष (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "साप्ताहिक राशि (CHF)",
+  "child.start_pocket": "शुरुआती शेष (CHF)",
   "child.today": "आज",
   "child.tasks": "कार्य",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} मिनट — {title}",
   "fines.add_btn": "+ जुर्माना जोड़ें",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "पैसे",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "पैसे",
   "money.balance": "शेष राशि",
   "money.weekly_hint": "साप्ताहिक राशि: {amount}",
   "money.pay_out": "भुगतान {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "धन जुर्माने",
   "money.no_money_fines": "कोई धन जुर्माना सेट नहीं है",
   "money.history": "खाता विवरण",
-  "money.no_history": "अभी कोई प्रविष्टि नहीं",  "fine.money_penalty": "कटौती (CHF)",  "fine.penalty_hint": "0 = कोई कटौती नहीं। धन जुर्माना लगाने पर अभिभावक PIN माँगा जाता है।",  "fines.applied_money": "⚠️ -{minutes} मिनट · -{money} — {title}",
+  "money.no_history": "अभी कोई प्रविष्टि नहीं",
+  "fine.money_penalty": "कटौती (CHF)",
+  "fine.penalty_hint": "0 = कोई कटौती नहीं। धन जुर्माना लगाने पर अभिभावक PIN माँगा जाता है।",
+  "fines.applied_money": "⚠️ -{minutes} मिनट · -{money} — {title}",
 
   "fine.add": "जुर्माना जोड़ें",
   "fine.edit": "जुर्माना संपादित करें",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 Google कैलेंडर एम्बेड करें",
   "admin.google_calendar_desc": "Google कैलेंडर → सेटिंग्स → «सार्वजनिक iCal URL» कॉपी करें और इसमें पेस्ट करें ",
   "admin.api_php_section": "api.php → iCal अनुभाग",
-  "admin.enter_text": "।",
+  "admin.enter_text": " और सहेजें। इसके बाद ईवेंट अपने आप आयात हो जाते हैं।",
   "admin.open_admin_panel": "🗄️ व्यवस्थापक पैनल खोलें",
   "admin.kids": "बच्चे",
   "admin.media_type_add": "+ मीडिया प्रकार जोड़ें",

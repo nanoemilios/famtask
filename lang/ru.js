@@ -57,6 +57,13 @@ window._langData = {
   "common.jpg_or_png": "JPG или PNG, макс. 5 МБ",
   "common.replaces_emoji": "Заменяет иконку-эмодзи",
   "common.remove": "Удалить",
+  "common.edit": "Изменить",
+  "a11y.skip": "Перейти к содержимому",
+  "a11y.edit": "Изменить",
+  "a11y.delete": "Удалить",
+  "a11y.close": "Закрыть",
+  "a11y.copy_code": "Скопировать код семьи",
+  "a11y.menu": "Меню",
   "common.or_custom": "Или введите своё число…",
   "common.all": "Все",
   "common.minutes_short": "мин",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "Заработанные минуты",
   "child.total_saved": "Всего сэкономлено",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "Недельная сумма (CHF)",  "child.start_pocket": "Начальный баланс (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "Недельная сумма (CHF)",
+  "child.start_pocket": "Начальный баланс (CHF)",
   "child.today": "Сегодня",
   "child.tasks": "Задачи",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} мин — {title}",
   "fines.add_btn": "+ Добавить штраф",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "Деньги",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "Деньги",
   "money.balance": "Баланс",
   "money.weekly_hint": "Недельная сумма: {amount}",
   "money.pay_out": "Выплатить · {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "Денежные штрафы",
   "money.no_money_fines": "Денежные штрафы не настроены",
   "money.history": "История",
-  "money.no_history": "Пока нет операций",  "fine.money_penalty": "Списание (CHF)",  "fine.penalty_hint": "0 = без списания. Для денежных штрафов нужен PIN родителя.",  "fines.applied_money": "⚠️ −{minutes} мин · −{money} — {title}",
+  "money.no_history": "Пока нет операций",
+  "fine.money_penalty": "Списание (CHF)",
+  "fine.penalty_hint": "0 = без списания. Для денежных штрафов нужен PIN родителя.",
+  "fines.applied_money": "⚠️ −{minutes} мин · −{money} — {title}",
 
   "fine.add": "Добавить штраф",
   "fine.edit": "Редактировать штраф",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 Встроить Google Календарь",
   "admin.google_calendar_desc": "В Google Календаре → Настройки → скопируйте «Публичный iCal URL» и вставьте в ",
   "admin.api_php_section": "api.php → раздел iCal",
-  "admin.enter_text": ".",
+  "admin.enter_text": " и сохраните. События затем импортируются автоматически.",
   "admin.open_admin_panel": "🗄️ Открыть панель администратора",
   "admin.kids": "Дети",
   "admin.media_type_add": "+ Добавить тип медиа",

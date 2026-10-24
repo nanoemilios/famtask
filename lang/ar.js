@@ -57,6 +57,13 @@ window._langData = {
   "common.jpg_or_png": "JPG أو PNG، بحد أقصى 5 MB",
   "common.replaces_emoji": "يستبدل أيقونة الإيموجي",
   "common.remove": "إزالة",
+  "common.edit": "تعديل",
+  "a11y.skip": "الانتقال إلى المحتوى",
+  "a11y.edit": "تعديل",
+  "a11y.delete": "حذف",
+  "a11y.close": "إغلاق",
+  "a11y.copy_code": "نسخ رمز العائلة",
+  "a11y.menu": "القائمة",
   "common.or_custom": "أو أدخل رقمًا مخصصًا…",
   "common.all": "الكل",
   "common.minutes_short": "د",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "الدقائق المكتسبة",
   "child.total_saved": "الإجمالي المدخر",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "المبلغ الأسبوعي (CHF)",  "child.start_pocket": "الرصيد الابتدائي (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "المبلغ الأسبوعي (CHF)",
+  "child.start_pocket": "الرصيد الابتدائي (CHF)",
   "child.today": "اليوم",
   "child.tasks": "المهام",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} د — {title}",
   "fines.add_btn": "+ إضافة غرامة",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "المال",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "المال",
   "money.balance": "الرصيد",
   "money.weekly_hint": "المبلغ الأسبوعي: {amount}",
   "money.pay_out": "دفع · {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "الغرامات المالية",
   "money.no_money_fines": "لا توجد غرامات مالية",
   "money.history": "كشف الحساب",
-  "money.no_history": "لا توجد عمليات بعد",  "fine.money_penalty": "الخصم (CHF)",  "fine.penalty_hint": "0 = بدون خصم. الخصم المالي يطلب رمز الوالدين.",  "fines.applied_money": "⚠️ -{minutes} د · -{money} — {title}",
+  "money.no_history": "لا توجد عمليات بعد",
+  "fine.money_penalty": "الخصم (CHF)",
+  "fine.penalty_hint": "0 = بدون خصم. الخصم المالي يطلب رمز الوالدين.",
+  "fines.applied_money": "⚠️ -{minutes} د · -{money} — {title}",
 
   "fine.add": "إضافة غرامة",
   "fine.edit": "تعديل غرامة",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 تضمين تقويم Google",
   "admin.google_calendar_desc": "في تقويم Google → الإعدادات → انسخ «رابط iCal العام» والصقه في ",
   "admin.api_php_section": "api.php → قسم iCal",
-  "admin.enter_text": ".",
+  "admin.enter_text": " ثم احفظ. تُستورد الأحداث تلقائيًا بعد ذلك.",
   "admin.open_admin_panel": "🗄️ فتح لوحة الإدارة",
   "admin.kids": "الأطفال",
   "admin.media_type_add": "+ إضافة نوع وسائط",

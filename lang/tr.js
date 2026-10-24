@@ -57,6 +57,13 @@
   "common.jpg_or_png": "JPG veya PNG, maks. 5 MB",
   "common.replaces_emoji": "Emoji simgesini değiştirir",
   "common.remove": "Kaldır",
+  "common.edit": "Düzenle",
+  "a11y.skip": "İçeriğe geç",
+  "a11y.edit": "Düzenle",
+  "a11y.delete": "Sil",
+  "a11y.close": "Kapat",
+  "a11y.copy_code": "Aile kodunu kopyala",
+  "a11y.menu": "Menü",
   "common.or_custom": "Veya özel bir sayı girin…",
   "common.all": "Tümü",
   "common.minutes_short": "dk",
@@ -146,7 +153,9 @@
   "child.earned_minutes": "Kazanılan dakikalar",
   "child.total_saved": "Toplam biriktirilen",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "Haftalık tutar (CHF)",  "child.start_pocket": "Başlangıç bakiyesi (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "Haftalık tutar (CHF)",
+  "child.start_pocket": "Başlangıç bakiyesi (CHF)",
   "child.today": "Bugün",
   "child.tasks": "Görevler",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@
   "fines.applied": "⚠️ -{minutes} dk — {title}",
   "fines.add_btn": "+ Ceza ekle",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "Para",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "Para",
   "money.balance": "Bakiye",
   "money.weekly_hint": "Haftalık tutar: {amount}",
   "money.pay_out": "Öde · {amount}",
@@ -254,7 +264,10 @@
   "money.fines_title": "Para cezaları",
   "money.no_money_fines": "Para cezası ayarlanmadı",
   "money.history": "Ekstre",
-  "money.no_history": "Henüz hareket yok",  "fine.money_penalty": "Kesinti (CHF)",  "fine.penalty_hint": "0 = kesinti yok. Para cezaları uygulanırken ebeveyn PIN ister.",  "fines.applied_money": "⚠️ −{minutes} dk · −{money} — {title}",
+  "money.no_history": "Henüz hareket yok",
+  "fine.money_penalty": "Kesinti (CHF)",
+  "fine.penalty_hint": "0 = kesinti yok. Para cezaları uygulanırken ebeveyn PIN ister.",
+  "fines.applied_money": "⚠️ −{minutes} dk · −{money} — {title}",
 
   "fine.add": "Ceza ekle",
   "fine.edit": "Cezayı düzenle",
@@ -302,7 +315,7 @@
   "admin.google_calendar": "🔗 Google Takvim'i göm",
   "admin.google_calendar_desc": "Google Takvim'de → Ayarlar → «Public iCal URL» kopyala ve ",
   "admin.api_php_section": "api.php → iCal bölümüne yapıştır",
-  "admin.enter_text": ".",
+  "admin.enter_text": ". Etkinlikler otomatik olarak içe aktarılır.",
   "admin.open_admin_panel": "🗄️ Yönetici panelini aç",
   "admin.kids": "Çocuklar",
   "admin.media_type_add": "+ Medya türü ekle",

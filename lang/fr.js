@@ -57,6 +57,13 @@ window._langData = {
   "common.jpg_or_png": "JPG ou PNG, max. 5 Mo",
   "common.replaces_emoji": "Remplace l'icône emoji",
   "common.remove": "Supprimer",
+  "common.edit": "Modifier",
+  "a11y.skip": "Aller au contenu",
+  "a11y.edit": "Modifier",
+  "a11y.delete": "Supprimer",
+  "a11y.close": "Fermer",
+  "a11y.copy_code": "Copier le code de la famille",
+  "a11y.menu": "Menu",
   "common.or_custom": "Ou entrez un nombre personnalisé…",
   "common.all": "Tous",
   "common.minutes_short": "min",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "Minutes gagnées",
   "child.total_saved": "Total économisé",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "Montant hebdomadaire (CHF)",  "child.start_pocket": "Solde de départ (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "Montant hebdomadaire (CHF)",
+  "child.start_pocket": "Solde de départ (CHF)",
   "child.today": "Aujourd'hui",
   "child.tasks": "Tâches",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} min — {title}",
   "fines.add_btn": "+ Ajouter une amende",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "Argent",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "Argent",
   "money.balance": "Solde",
   "money.weekly_hint": "Montant hebdomadaire : {amount}",
   "money.pay_out": "Payer · {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "Amendes en argent",
   "money.no_money_fines": "Aucune amende en argent configurée",
   "money.history": "Relevé",
-  "money.no_history": "Aucune écriture pour l'instant",  "fine.money_penalty": "Déduction (CHF)",  "fine.penalty_hint": "0 = aucune déduction. Les déductions en argent demandent le code PIN des parents.",  "fines.applied_money": "⚠️ −{minutes} min · −{money} — {title}",
+  "money.no_history": "Aucune écriture pour l'instant",
+  "fine.money_penalty": "Déduction (CHF)",
+  "fine.penalty_hint": "0 = aucune déduction. Les déductions en argent demandent le code PIN des parents.",
+  "fines.applied_money": "⚠️ −{minutes} min · −{money} — {title}",
 
   "fine.add": "Ajouter une amende",
   "fine.edit": "Modifier l'amende",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 Intégrer Google Calendar",
   "admin.google_calendar_desc": "Dans Google Calendar → Paramètres → copiez l'« Adresse publique au format iCal » et collez-la dans ",
   "admin.api_php_section": "api.php → section iCal",
-  "admin.enter_text": ".",
+  "admin.enter_text": " puis enregistrez. Les événements sont ensuite importés automatiquement.",
   "admin.open_admin_panel": "🗄️ Ouvrir le panneau d'administration",
   "admin.kids": "Enfants",
   "admin.media_type_add": "+ Ajouter un type de média",

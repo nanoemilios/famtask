@@ -32,7 +32,10 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 - Kind-Karten sind per Tastatur bedienbar (`role="button"`, Enter/Leertaste)
 - Kontraste über alle Ansichten angehoben (u. a. Hinweise, Metadaten,
   inaktive Filter, ausgewählte Tage/Chips mit dunkler Schrift)
-- Neue Übersetzungsschlüssel `a11y.*` in Deutsch und Englisch
+- Neue Übersetzungsschlüssel `a11y.*` in allen 19 Sprachen; `common.edit`
+  ergänzt (fehlte überall und wurde als roher Schlüssel angezeigt)
+- Der iCal-Hinweis im Admin (`admin.enter_text`) war außerhalb des Deutschen
+  nur ein Satzzeichen; jetzt überall ein vollständiger Satz
 
 **Ladezeit**
 - React-Quelltext nach `src/app.jsx` ausgelagert; `app.js` wird mit

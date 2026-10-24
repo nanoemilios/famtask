@@ -57,6 +57,13 @@ window._langData = {
   "common.jpg_or_png": "JPG หรือ PNG สูงสุด 5 MB",
   "common.replaces_emoji": "แทนที่ไอคอนอิโมจิ",
   "common.remove": "ลบ",
+  "common.edit": "แก้ไข",
+  "a11y.skip": "ข้ามไปยังเนื้อหา",
+  "a11y.edit": "แก้ไข",
+  "a11y.delete": "ลบ",
+  "a11y.close": "ปิด",
+  "a11y.copy_code": "คัดลอกโค้ดครอบครัว",
+  "a11y.menu": "เมนู",
   "common.or_custom": "หรือป้อนตัวเลขที่กำหนดเอง…",
   "common.all": "ทั้งหมด",
   "common.minutes_short": "นาที",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "นาทีที่ได้รับ",
   "child.total_saved": "รวมที่เก็บได้",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "จำนวนเงินต่อสัปดาห์ (CHF)",  "child.start_pocket": "ยอดเริ่มต้น (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "จำนวนเงินต่อสัปดาห์ (CHF)",
+  "child.start_pocket": "ยอดเริ่มต้น (CHF)",
   "child.today": "วันนี้",
   "child.tasks": "งาน",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} นาที — {title}",
   "fines.add_btn": "+ เพิ่มค่าปรับ",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "เงิน",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "เงิน",
   "money.balance": "ยอดคงเหลือ",
   "money.weekly_hint": "จำนวนเงินต่อสัปดาห์: {amount}",
   "money.pay_out": "จ่าย · {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "ค่าปรับเงิน",
   "money.no_money_fines": "ยังไม่ได้ตั้งค่าปรับเงิน",
   "money.history": "ประวัติ",
-  "money.no_history": "ยังไม่มีรายการ",  "fine.money_penalty": "หัก (CHF)",  "fine.penalty_hint": "0 = ไม่หัก การหักเงินจะขอ PIN จากผู้ปกครอง",  "fines.applied_money": "⚠️ -{minutes} นาที · -{money} — {title}",
+  "money.no_history": "ยังไม่มีรายการ",
+  "fine.money_penalty": "หัก (CHF)",
+  "fine.penalty_hint": "0 = ไม่หัก การหักเงินจะขอ PIN จากผู้ปกครอง",
+  "fines.applied_money": "⚠️ -{minutes} นาที · -{money} — {title}",
 
   "fine.add": "เพิ่มค่าปรับ",
   "fine.edit": "แก้ไขค่าปรับ",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 ฝัง Google ปฏิทิน",
   "admin.google_calendar_desc": "ใน Google ปฏิทิน → ตั้งค่า → คัดลอก «Public iCal URL» และวางลงใน ",
   "admin.api_php_section": "api.php → ส่วน iCal",
-  "admin.enter_text": ".",
+  "admin.enter_text": " แล้วบันทึก กิจกรรมจะถูกนำเข้าอัตโนมัติ",
   "admin.open_admin_panel": "🗄️ เปิดแผงผู้ดูแลระบบ",
   "admin.kids": "เด็ก",
   "admin.media_type_add": "+ เพิ่มประเภทสื่อ",

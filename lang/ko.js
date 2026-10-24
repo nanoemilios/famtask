@@ -57,6 +57,13 @@ window._langData = {
   "common.jpg_or_png": "JPG 또는 PNG, 최대 5MB",
   "common.replaces_emoji": "이모지 아이콘을 대체합니다",
   "common.remove": "제거",
+  "common.edit": "편집",
+  "a11y.skip": "콘텐츠로 건너뛰기",
+  "a11y.edit": "편집",
+  "a11y.delete": "삭제",
+  "a11y.close": "닫기",
+  "a11y.copy_code": "가족 코드 복사",
+  "a11y.menu": "메뉴",
   "common.or_custom": "또는 사용자 정의 숫자 입력…",
   "common.all": "전체",
   "common.minutes_short": "분",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "획득한 분",
   "child.total_saved": "총 절약 시간",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "주간 금액 (CHF)",  "child.start_pocket": "시작 잔액 (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "주간 금액 (CHF)",
+  "child.start_pocket": "시작 잔액 (CHF)",
   "child.today": "오늘",
   "child.tasks": "작업",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes}분 — {title}",
   "fines.add_btn": "+ 벌금 추가",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "돈",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "돈",
   "money.balance": "잔액",
   "money.weekly_hint": "주간 금액: {amount}",
   "money.pay_out": "지급 · {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "돈 벌금",
   "money.no_money_fines": "설정된 돈 벌금이 없습니다",
   "money.history": "거래 내역",
-  "money.no_history": "아직 기록이 없습니다",  "fine.money_penalty": "차감 (CHF)",  "fine.penalty_hint": "0 = 차감 없음. 돈 벌금은 적용 시 학부모 PIN이 필요합니다.",  "fines.applied_money": "⚠️ -{minutes}분 · -{money} — {title}",
+  "money.no_history": "아직 기록이 없습니다",
+  "fine.money_penalty": "차감 (CHF)",
+  "fine.penalty_hint": "0 = 차감 없음. 돈 벌금은 적용 시 학부모 PIN이 필요합니다.",
+  "fines.applied_money": "⚠️ -{minutes}분 · -{money} — {title}",
 
   "fine.add": "벌금 추가",
   "fine.edit": "벌금 수정",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 Google 캘린더 연동",
   "admin.google_calendar_desc": "Google 캘린더 → 설정 → «공개 iCal URL» 복사 후 붙여넣기 ",
   "admin.api_php_section": "api.php → iCal 섹션",
-  "admin.enter_text": ".",
+  "admin.enter_text": " 에 저장하면 일정이 자동으로 가져옵니다.",
   "admin.open_admin_panel": "🗄️ 관리 패널 열기",
   "admin.kids": "아이들",
   "admin.media_type_add": "+ 미디어 유형 추가",

@@ -60,6 +60,7 @@ window._langData = {
   "common.jpg_or_png": "JPG oder PNG, max. 5 MB",
   "common.replaces_emoji": "Ersetzt das Emoji-Icon",
   "common.remove": "Entfernen",
+  "common.edit": "Bearbeiten",
   // ── Barrierefreiheit ──
   "a11y.skip": "Zum Inhalt springen",
   "a11y.edit": "Bearbeiten",
@@ -164,7 +165,9 @@ window._langData = {
   "child.earned_minutes": "Verdiente Minuten",
   "child.total_saved": "Gesamt angespart",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "Wochenbetrag (CHF)",  "child.start_pocket": "Startguthaben (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "Wochenbetrag (CHF)",
+  "child.start_pocket": "Startguthaben (CHF)",
   "child.today": "Heute",
   "child.tasks": "Aufgaben",
   "child.today_progress": "{done}/{total}",
@@ -253,7 +256,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} Min — {title}",
   "fines.add_btn": "+ Strafe hinzufügen",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "Geld",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "Geld",
   "money.balance": "Guthaben",
   "money.weekly_hint": "Wochenbetrag: {amount}",
   "money.pay_out": "Auszahlen · {amount}",
@@ -278,7 +282,10 @@ window._langData = {
   "money.fines_title": "Geldstrafen",
   "money.no_money_fines": "Keine Geldstrafen eingerichtet",
   "money.history": "Kontoauszug",
-  "money.no_history": "Noch keine Buchungen",  "fine.money_penalty": "Geld-Abzug (CHF)",  "fine.penalty_hint": "0 = kein Abzug. Geld-Abzüge verlangen beim Anwenden die Eltern-PIN.",  "fines.applied_money": "⚠️ -{minutes} Min · -{money} — {title}",
+  "money.no_history": "Noch keine Buchungen",
+  "fine.money_penalty": "Geld-Abzug (CHF)",
+  "fine.penalty_hint": "0 = kein Abzug. Geld-Abzüge verlangen beim Anwenden die Eltern-PIN.",
+  "fines.applied_money": "⚠️ -{minutes} Min · -{money} — {title}",
 
   // ── Fine Modal ──
   "fine.add": "Strafe hinzufügen",

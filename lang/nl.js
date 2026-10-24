@@ -57,6 +57,13 @@ window._langData = {
   "common.jpg_or_png": "JPG of PNG, max 5 MB",
   "common.replaces_emoji": "Vervangt het emoji-icoon",
   "common.remove": "Verwijderen",
+  "common.edit": "Bewerken",
+  "a11y.skip": "Naar de inhoud",
+  "a11y.edit": "Bewerken",
+  "a11y.delete": "Verwijderen",
+  "a11y.close": "Sluiten",
+  "a11y.copy_code": "Gezinscode kopiëren",
+  "a11y.menu": "Menu",
   "common.or_custom": "Of voer een eigen getal in…",
   "common.all": "Alle",
   "common.minutes_short": "min",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "Verdiende minuten",
   "child.total_saved": "Totaal gespaard",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "Wekelijks bedrag (CHF)",  "child.start_pocket": "Startsaldo (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "Wekelijks bedrag (CHF)",
+  "child.start_pocket": "Startsaldo (CHF)",
   "child.today": "Vandaag",
   "child.tasks": "Taken",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} min — {title}",
   "fines.add_btn": "+ Boete toevoegen",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "Geld",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "Geld",
   "money.balance": "Saldo",
   "money.weekly_hint": "Wekelijks bedrag: {amount}",
   "money.pay_out": "Uitbetalen · {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "Geldboetes",
   "money.no_money_fines": "Nog geen geldboetes ingesteld",
   "money.history": "Afschrift",
-  "money.no_history": "Nog geen boekingen",  "fine.money_penalty": "Aftrek (CHF)",  "fine.penalty_hint": "0 = geen aftrek. Geldboetes vragen om de ouder-PIN.",  "fines.applied_money": "⚠️ −{minutes} min · −{money} — {title}",
+  "money.no_history": "Nog geen boekingen",
+  "fine.money_penalty": "Aftrek (CHF)",
+  "fine.penalty_hint": "0 = geen aftrek. Geldboetes vragen om de ouder-PIN.",
+  "fines.applied_money": "⚠️ −{minutes} min · −{money} — {title}",
 
   "fine.add": "Boete toevoegen",
   "fine.edit": "Boete bewerken",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 Google Agenda insluiten",
   "admin.google_calendar_desc": "In Google Agenda → Instellingen → kopieer «Openbare iCal-URL» en plak in ",
   "admin.api_php_section": "api.php → iCal-sectie",
-  "admin.enter_text": ".",
+  "admin.enter_text": " en sla op. Afspraken worden daarna automatisch geïmporteerd.",
   "admin.open_admin_panel": "🗄️ Beheerpaneel openen",
   "admin.kids": "Kinderen",
   "admin.media_type_add": "+ Mediatype toevoegen",

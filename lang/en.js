@@ -56,6 +56,7 @@ window._langData = {
   "common.jpg_or_png": "JPG or PNG, max 5 MB",
   "common.replaces_emoji": "Replaces the emoji icon",
   "common.remove": "Remove",
+  "common.edit": "Edit",
   // ── Accessibility ──
   "a11y.skip": "Skip to content",
   "a11y.edit": "Edit",
@@ -153,7 +154,9 @@ window._langData = {
   "child.earned_minutes": "Earned minutes",
   "child.total_saved": "Total saved",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "Weekly amount (CHF)",  "child.start_pocket": "Starting balance (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "Weekly amount (CHF)",
+  "child.start_pocket": "Starting balance (CHF)",
   "child.today": "Today",
   "child.tasks": "Tasks",
   "child.today_progress": "{done}/{total}",
@@ -236,7 +239,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} min — {title}",
   "fines.add_btn": "+ Add fine",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "Money",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "Money",
   "money.balance": "Balance",
   "money.weekly_hint": "Weekly amount: {amount}",
   "money.pay_out": "Pay out · {amount}",
@@ -261,7 +265,10 @@ window._langData = {
   "money.fines_title": "Money fines",
   "money.no_money_fines": "No money fines set up",
   "money.history": "Statement",
-  "money.no_history": "No entries yet",  "fine.money_penalty": "Money deduction (CHF)",  "fine.penalty_hint": "0 = no deduction. Money deductions ask for the parent PIN when applied.",  "fines.applied_money": "⚠️ -{minutes} min · -{money} — {title}",
+  "money.no_history": "No entries yet",
+  "fine.money_penalty": "Money deduction (CHF)",
+  "fine.penalty_hint": "0 = no deduction. Money deductions ask for the parent PIN when applied.",
+  "fines.applied_money": "⚠️ -{minutes} min · -{money} — {title}",
 
   "fine.add": "Add fine",
   "fine.edit": "Edit fine",
@@ -309,7 +316,7 @@ window._langData = {
   "admin.google_calendar": "🔗 Embed Google Calendar",
   "admin.google_calendar_desc": "In Google Calendar → Settings → copy «Public iCal URL» and paste into ",
   "admin.api_php_section": "api.php → iCal section",
-  "admin.enter_text": ".",
+  "admin.enter_text": " and save. Events are then imported automatically.",
   "admin.open_admin_panel": "🗄️ Open admin panel",
   "admin.kids": "Children",
   "admin.media_type_add": "+ Add media type",

@@ -57,6 +57,13 @@ window._langData = {
   "common.jpg_or_png": "JPG lub PNG, maks. 5 MB",
   "common.replaces_emoji": "Zastępuje ikonę emoji",
   "common.remove": "Usuń",
+  "common.edit": "Edytuj",
+  "a11y.skip": "Przejdź do treści",
+  "a11y.edit": "Edytuj",
+  "a11y.delete": "Usuń",
+  "a11y.close": "Zamknij",
+  "a11y.copy_code": "Kopiuj kod rodziny",
+  "a11y.menu": "Menu",
   "common.or_custom": "Lub wpisz niestandardową liczbę…",
   "common.all": "Wszystkie",
   "common.minutes_short": "min",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "Zarobione minuty",
   "child.total_saved": "Łącznie zaoszczędzone",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "Kwota tygodniowa (CHF)",  "child.start_pocket": "Saldo początkowe (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "Kwota tygodniowa (CHF)",
+  "child.start_pocket": "Saldo początkowe (CHF)",
   "child.today": "Dziś",
   "child.tasks": "Zadania",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} min — {title}",
   "fines.add_btn": "+ Dodaj karę",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "Pieniądze",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "Pieniądze",
   "money.balance": "Saldo",
   "money.weekly_hint": "Kwota tygodniowa: {amount}",
   "money.pay_out": "Wypłać · {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "Kary pieniężne",
   "money.no_money_fines": "Brak skonfigurowanych kar pieniężnych",
   "money.history": "Historia",
-  "money.no_history": "Brak wpisów",  "fine.money_penalty": "Odjęcie (CHF)",  "fine.penalty_hint": "0 = brak odjęcia. Kary pieniężne wymagają PIN-u rodzica.",  "fines.applied_money": "⚠️ −{minutes} min · −{money} — {title}",
+  "money.no_history": "Brak wpisów",
+  "fine.money_penalty": "Odjęcie (CHF)",
+  "fine.penalty_hint": "0 = brak odjęcia. Kary pieniężne wymagają PIN-u rodzica.",
+  "fines.applied_money": "⚠️ −{minutes} min · −{money} — {title}",
 
   "fine.add": "Dodaj karę",
   "fine.edit": "Edytuj karę",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 Osadź Kalendarz Google",
   "admin.google_calendar_desc": "W Kalendarzu Google → Ustawienia → skopiuj «Publiczny adres iCal» i wklej do ",
   "admin.api_php_section": "api.php → sekcja iCal",
-  "admin.enter_text": ".",
+  "admin.enter_text": " i zapisz. Wydarzenia są następnie importowane automatycznie.",
   "admin.open_admin_panel": "🗄️ Otwórz panel admina",
   "admin.kids": "Dzieci",
   "admin.media_type_add": "+ Dodaj typ multimediów",

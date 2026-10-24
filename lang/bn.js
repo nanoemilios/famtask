@@ -57,6 +57,13 @@ window._langData = {
   "common.jpg_or_png": "JPG বা PNG, সর্বোচ্চ 5 MB",
   "common.replaces_emoji": "ইমোজি আইকন প্রতিস্থাপন করে",
   "common.remove": "সরান",
+  "common.edit": "সম্পাদনা করুন",
+  "a11y.skip": "বিষয়বস্তুতে যান",
+  "a11y.edit": "সম্পাদনা করুন",
+  "a11y.delete": "মুছুন",
+  "a11y.close": "বন্ধ করুন",
+  "a11y.copy_code": "পরিবার কোড কপি করুন",
+  "a11y.menu": "মেনু",
   "common.or_custom": "অথবা একটি কাস্টম সংখ্যা লিখুন…",
   "common.all": "সব",
   "common.minutes_short": "মিনিট",
@@ -146,7 +153,9 @@ window._langData = {
   "child.earned_minutes": "অর্জিত মিনিট",
   "child.total_saved": "মোট সঞ্চিত",
 
-  // ── Sackgeld-Felder ──  "child.weekly_pocket": "সাপ্তাহিক পরিমাণ (CHF)",  "child.start_pocket": "প্রাথমিক জমা (CHF)",
+  // ── Sackgeld-Felder ──
+  "child.weekly_pocket": "সাপ্তাহিক পরিমাণ (CHF)",
+  "child.start_pocket": "প্রাথমিক জমা (CHF)",
   "child.today": "আজ",
   "child.tasks": "কাজসমূহ",
   "child.today_progress": "{done}/{total}",
@@ -229,7 +238,8 @@ window._langData = {
   "fines.applied": "⚠️ -{minutes} মিনিট — {title}",
   "fines.add_btn": "+ জরিমানা যোগ করুন",
 
-  // ── Sackgeld (CHF) ──  "nav.money": "টাকা",
+  // ── Sackgeld (CHF) ──
+  "nav.money": "টাকা",
   "money.balance": "জমা",
   "money.weekly_hint": "সাপ্তাহিক পরিমাণ: {amount}",
   "money.pay_out": "পরিশোধ · {amount}",
@@ -254,7 +264,10 @@ window._langData = {
   "money.fines_title": "টাকার জরিমানা",
   "money.no_money_fines": "টাকার জরিমানা সেট করা নেই",
   "money.history": "হিসাব",
-  "money.no_history": "এখনও কোনো লেনদেন নেই",  "fine.money_penalty": "কাটা (CHF)",  "fine.penalty_hint": "0 = কোনো কাটছাঁড় নেই। টাকার জরিমানা প্রয়োগে অভিভাবকের PIN লাগে।",  "fines.applied_money": "⚠️ -{minutes} মিনিট · -{money} — {title}",
+  "money.no_history": "এখনও কোনো লেনদেন নেই",
+  "fine.money_penalty": "কাটা (CHF)",
+  "fine.penalty_hint": "0 = কোনো কাটছাঁড় নেই। টাকার জরিমানা প্রয়োগে অভিভাবকের PIN লাগে।",
+  "fines.applied_money": "⚠️ -{minutes} মিনিট · -{money} — {title}",
 
   "fine.add": "জরিমানা যোগ করুন",
   "fine.edit": "জরিমানা সম্পাদনা করুন",
@@ -302,7 +315,7 @@ window._langData = {
   "admin.google_calendar": "🔗 গুগল ক্যালেন্ডার এম্বেড করুন",
   "admin.google_calendar_desc": "গুগল ক্যালেন্ডার → সেটিংস → «পাবলিক iCal URL» কপি করুন এবং এতে পেস্ট করুন ",
   "admin.api_php_section": "api.php → iCal সেকশন",
-  "admin.enter_text": ".",
+  "admin.enter_text": " তারপর সংরক্ষণ করুন। ইভেন্টগুলি স্বয়ংক্রিয়ভাবে আমদানি হয়।",
   "admin.open_admin_panel": "🗄️ অ্যাডমিন প্যানেল খুলুন",
   "admin.kids": "শিশু",
   "admin.media_type_add": "+ মিডিয়া টাইপ যোগ করুন",
