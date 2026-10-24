@@ -34,6 +34,19 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
   inaktive Filter, ausgewählte Tage/Chips mit dunkler Schrift)
 - Neue Übersetzungsschlüssel `a11y.*` in Deutsch und Englisch
 
+**Ladezeit**
+- React-Quelltext nach `src/app.jsx` ausgelagert; `app.js` wird mit
+  `node tools/build_app.mjs` vorgebaut und mitgeliefert
+- `index.html` schrumpft von 313 KB auf 8 KB, `vendor/babel.min.js` (2,4 MB)
+  wird nur noch im Entwicklungsmodus geladen
+- Ohne Build bleibt alles lauffähig: `?dev=1` an der URL oder eine fehlende
+  `app.js` laden `src/app.jsx` und übersetzen es im Browser
+- Erster Aufruf rund 630 KB → 185 KB (gzip, inklusive Schriften);
+  DOMContentLoaded im Test von 15–30 s auf unter 0,5 s
+- `app.js` bekommt einen Inhalts-Hash als `?v=…`, damit nach einem Update
+  nicht die alte Datei aus dem Browser-Cache läuft
+- Auf dem Webserver sind weiterhin weder Node noch npm nötig
+
 **Design-System & Social-Sharing**
 - Design-Tokens in `styles.css` (`:root`): Farben, Verläufe, Text- und
   Linienwerte, Radien und Schatten an einer Stelle; über 140 Verwendungen

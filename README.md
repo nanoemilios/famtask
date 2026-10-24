@@ -78,13 +78,35 @@ Familien-Aufgaben-App mit HTML-Frontend (React) und PHP-Backend (MariaDB).
 
 | Datei | Zweck |
 |---|---|
-| `index.html` | Oberfläche und gesamte App-Logik (React, ohne Build-Schritt) |
+| `index.html` | Oberfläche; lädt `app.js` (ohne Build: `?dev=1` lädt die JSX-Quelle) |
+| `src/app.jsx` | React-Quelltext (JSX) – hier wird entwickelt |
+| `app.js` | Gebaute App, wird mit ausgeliefert – nicht direkt bearbeiten |
+| `tools/build_app.mjs` | Baut `app.js` aus `src/app.jsx` |
 | `api.php` | Sync, Familien, Einstellungen, Kalender, Admin |
 | `jukebox.php` | Musik-Scan, Streaming, Cover, Upload, Verwaltung |
 | `remote.php` | Externe Musikquellen: WebDAV, FTP, HTTPS/S3, Mounts |
 | `styles.css` | Gestaltung |
 | `lang/*.js` | Übersetzungen (19 Sprachen) |
 | `audio/` | Musikdateien, Unterordner = Alben |
+
+## Entwicklung
+
+Die App läuft auch ohne Build: `index.html?dev=1` lädt `src/app.jsx` und
+übersetzt es im Browser (über `vendor/babel.min.js`, langsam – nur zum
+Entwickeln gedacht).
+
+Für den normalen Betrieb wird `app.js` vorab gebaut:
+
+```bash
+node tools/build_app.mjs          # nach Änderungen an src/app.jsx
+node tools/build_app.mjs --watch  # baut bei jeder Änderung neu
+```
+
+Das gebaute `app.js` liegt im Repository und wird mit ausgeliefert. Auf dem
+Webserver werden weder Node noch npm gebraucht. Fehlt `app.js`, fällt die Seite
+automatisch auf den Quelltext-Weg zurück; der Build schreibt außerdem einen
+Inhalts-Hash als `?v=…` in `index.html`, damit nach einem Update nicht die alte
+Datei aus dem Browser-Cache läuft.
 
 ## Installation
 
