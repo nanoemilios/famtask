@@ -151,10 +151,15 @@
       window._pwa.installed = true;
       window._pwa.canShow   = false;
     } else {
-      const _isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
-      const _isIosSafari = _isIos && /safari/i.test(navigator.userAgent) && !/crios|fxios|opios/i.test(navigator.userAgent);
+      // iPadOS meldet sich im Standard-Desktop-Modus als „Macintosh";
+      // maxTouchPoints unterscheidet es von einem echten Mac.
+      const _ua = navigator.userAgent;
+      const _isIpadOS = /macintosh/i.test(_ua) && navigator.maxTouchPoints > 1;
+      const _isIos = /iphone|ipad|ipod/i.test(_ua) || _isIpadOS;
 
-      if (_isIosSafari) {
+      // Auf iPhone/iPad gibt es kein beforeinstallprompt – dort führt immer der
+      // Weg über das Teilen-Menü, egal ob Safari, Chrome, Edge oder Firefox.
+      if (_isIos) {
         window._pwa.type    = 'ios';
         window._pwa.canShow = true;
         window._pwa.notify();

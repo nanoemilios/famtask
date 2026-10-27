@@ -19,6 +19,10 @@
   }
 
   window.t = function(key, vars) {
+    // Listen (z. B. pwa.step_share = [Icon, Titel, Untertitel]) unveraendert
+    // zurueckgeben – lookup() liefert nur Textwerte.
+    if (Array.isArray(window._langData[key])) return window._langData[key];
+    if (Array.isArray(window._langDataDe[key])) return window._langDataDe[key];
     let val = lookup(window._langData, key);
     if (val === null) val = lookup(window._langDataDe, key);
     if (val === null) val = key;

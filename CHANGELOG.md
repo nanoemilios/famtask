@@ -19,6 +19,13 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 - `manifest.json` mit 192/512-px-Icons für `any` und `maskable` (Safe-Zone)
 - PWA bleibt installierbar (Chrome/Edge/Android); das Caching übernimmt jetzt
   der Service Worker (siehe „Ladezeit“)
+- Installationsanleitung auf iPhone/iPad korrigiert: iPadOS im Desktop-Modus
+  und Chrome/Edge unter iOS bekamen die Android-Schritte. Die drei Schritte
+  wurden außerdem als „p w a“ statt als Text angezeigt, weil `t()` Listen
+  nicht zurückgab
+- Die Anleitung nennt jetzt „iPhone / iPad“ statt „iOS Safari“ und verweist
+  ohne Positionsangabe auf die Browser-Leiste (iPad zeigt das Teilen-Symbol
+  oben, das iPhone unten)
 - `tools/build_icons.py` erzeugt das Set reproduzierbar aus einer Geometrie
 
 **Barrierefreiheit & Design-Feinschliff**

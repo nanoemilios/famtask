@@ -9,7 +9,7 @@
 //
 // Bei jedem Release CACHE_VERSION erhoehen – dann wird der alte Cache geloescht.
 
-const CACHE_VERSION = 'famtask-1.5.0-1';
+const CACHE_VERSION = 'famtask-1.5.0-2';
 
 // Grundgeruest ohne index.html (wird separat geholt, siehe precache()).
 // app.js kommt mit seinem Inhalts-Hash dazu und wird aus index.html gelesen.
