@@ -68,6 +68,20 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 - `.htaccess` bleibt die Apache-Variante; die nginx-Entsprechung steht in
   `famtask_docs/DEPLOYMENT.md`
 
+**Audio-Player & Streaming**
+- Grosse Titel (Hörspiele, ~50 MB) starten sofort: `preload="metadata"` statt
+  `"auto"`, kein doppelter `load()`-Aufruf mehr; die Ladeanzeige (⏳) zeigt,
+  solange der Stream noch puffert
+- `jukebox.php` liefert Audio in Blöcken aus statt die Datei in den Speicher zu
+  laden, beherrscht Suffix-Ranges (`bytes=-1024`, nutzt Safari/iOS) und
+  antwortet bei ungültigen Bereichen mit 416
+- `Content-Length` bleibt auch bei aktivierter PHP-Kompression erhalten; fehlt
+  er, zeigen Browser bei MP3 die Dauer als „Infinity“ und laden die ganze Datei
+- Unbekannte Dauer erscheint als „–:––“ statt „Infinity:NaN“ und wird
+  nachgezogen, sobald der Browser die Länge kennt (`durationchange`)
+- Audio-Antworten sind eine Stunde cachebar (`private, max-age=3600`) statt
+  `no-store`
+
 **Design-System & Social-Sharing**
 - Design-Tokens in `styles.css` (`:root`): Farben, Verläufe, Text- und
   Linienwerte, Radien und Schatten an einer Stelle; über 140 Verwendungen

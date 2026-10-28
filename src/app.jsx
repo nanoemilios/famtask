@@ -1517,6 +1517,7 @@ const ANIMALS = [
       const [albums,setAlbums]=useState(()=>{try{const v=localStorage.getItem('ft-ab');return v?JSON.parse(v):[];}catch(e){return [];}});   // Server-Alben (gruppiert)
       const [currentAudio,setCurrentAudio]=useState(null); // Aktuell spielende Audio
       const [playing,setPlaying]=useState(false);
+      const [audioLoading,setAudioLoading]=useState(false); // true, solange der Stream noch puffert
       const audioRef=useRef(null);
       const audioTimeRef=useRef(0);
       const audioDurationRef=useRef(0);
@@ -1569,16 +1570,32 @@ const ANIMALS = [
       useEffect(()=>{try{localStorage.setItem('ft-ab',JSON.stringify(albums));}catch(e){}},[albums]);
       useEffect(()=>{if(audioRef.current)audioRef.current.volume=audioVolume;},[audioVolume]);
 
-      const playAudio=(audio)=>{setCurrentAudio(audio);setPlaying(true);const a=audioRef.current;if(!a)return;a.pause();a.removeAttribute('src');a.load();a.src=audio.src;a.load();a.play().catch(err=>{if(err.name==='NotAllowedError'){setPlaying(false);showToast(t('audio.autoplay_blocked'),'err');}});};
-      const pauseAudio=()=>{if(audioRef.current)audioRef.current.pause();setPlaying(false);};
+      const playAudio=(audio)=>{setCurrentAudio(audio);setPlaying(true);setAudioLoading(true);const a=audioRef.current;if(!a)return;a.pause();a.src=audio.src;a.load();a.play().catch(err=>{if(err.name==='NotAllowedError'){setPlaying(false);setAudioLoading(false);showToast(t('audio.autoplay_blocked'),'err');}else{console.warn('Playback failed:',err.name);}});};
+      const pauseAudio=()=>{if(audioRef.current)audioRef.current.pause();setPlaying(false);setAudioLoading(false);};
       const addAudio=(file)=>{const reader=new FileReader();reader.onload=e=>{const aud={id:uid(),name:file.name.replace(/\.[^.]+$/,''),src:e.target.result,duration:0};setAudioList(p=>[...p,aud]);showToast(t('audio.added',{name:aud.name}));};reader.readAsDataURL(file);};
       const deleteAudio=(id)=>{if(currentAudio?.id===id)pauseAudio();setAudioList(p=>p.filter(a=>a.id!==id));setAlbums(p=>{const r=p.map(a=>({...a,songs:a.songs.filter(s=>s.id!==id)}));return r.filter(a=>a.songs.length>0);});};
       const playNext=()=>{const idx=audioList.findIndex(a=>a.id===currentAudio?.id);if(idx>=0&&idx<audioList.length-1)playAudio(audioList[idx+1]);};
       const playPrev=()=>{const idx=audioList.findIndex(a=>a.id===currentAudio?.id);if(idx>0)playAudio(audioList[idx-1]);};
 
       // ── Audio Helpers (für persistente Player-Leiste) ──
-      const fmtTime=(sec)=>{if(!sec||isNaN(sec)||sec<0)return'0:00';const m=Math.floor(sec/60);const s=Math.floor(sec%60);return m+':'+String(s).padStart(2,'0');};
-      const handleProgressClick=(e)=>{if(!audioRef.current)return;const dur=audioDurationRef.current;if(!dur||dur===0)return;const rect=e.currentTarget.getBoundingClientRect();const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));audioRef.current.currentTime=pct*dur;};
+      // Infinity/NaN kommt bei grossen MP3s vor (VBR ohne Xing-Kopf oder
+      // Server ohne Content-Length): dann lieber "–:––" als "Infinity:NaN".
+      const fmtTime=(sec)=>{if(typeof sec!=='number'||!isFinite(sec)||sec<0)return'–:––';const m=Math.floor(sec/60);const s=Math.floor(sec%60);return m+':'+String(s).padStart(2,'0');};
+      // Dauer, die der Browser wirklich kennt: audio.duration, sonst das Ende
+      // des puffernbaren Bereichs (bei Infinity erst nach dem Nachladen bekannt).
+      const knownDuration=(audio)=>{
+        if(!audio)return 0;
+        if(isFinite(audio.duration)&&audio.duration>0)return audio.duration;
+        try{const n=audio.seekable.length;if(n>0){const e=audio.seekable.end(n-1);if(isFinite(e)&&e>0)return e;}}catch(e){}
+        return 0;
+      };
+      const refreshDuration=()=>{
+        const audio=audioRef.current;if(!audio)return;
+        const d=knownDuration(audio);audioDurationRef.current=d;
+        const txt=d>0?fmtTime(d):'–:––';
+        ['dom-player-dur','jb-player-dur'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=txt;});
+      };
+      const handleProgressClick=(e)=>{const audio=audioRef.current;if(!audio)return;const dur=knownDuration(audio)||audioDurationRef.current;if(!dur||!isFinite(dur)||dur<=0)return;const rect=e.currentTarget.getBoundingClientRect();const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));audio.currentTime=pct*dur;};
 
       // ── Persistente Audio-Event-Listener (immer aktiv, auch ausserhalb AudioPlayerScreen) ──
       useEffect(()=>{
@@ -1595,24 +1612,32 @@ const ANIMALS = [
           if(mt)mt.textContent=fmtTime(audio.currentTime);
           const mb=document.getElementById('jb-player-bar');
           if(mb){const d=audioDurationRef.current;mb.style.width=(d&&d>0?(audio.currentTime/d)*100:0)+'%';}
+          // Dauer mitziehen: bei grossen Dateien wird sie erst nachgeladen
+          refreshDuration();
         };
-        const handleLoadedMetadata=()=>{
-          audioDurationRef.current=audio.duration;
-          const d=document.getElementById('dom-player-dur');
-          if(d)d.textContent=fmtTime(audio.duration);
-          const jd=document.getElementById('jb-player-dur');
-          if(jd)jd.textContent=fmtTime(audio.duration);
-        };
-        const handleEnded=()=>{setPlaying(false);const idx=audioList.findIndex(a=>a.id===currentAudio?.id);if(idx>=0&&idx<audioList.length-1)playAudio(audioList[idx+1]);};
-        const handleError=(e)=>{console.error('Audio error:',e);setPlaying(false);showToast(t('audio.could_not_load'),'err');};
-        const handleCanPlay=()=>{if(playing&&audioRef.current)audioRef.current.play().catch(err=>{console.warn('Playback failed:',err.name);setPlaying(false);});};
+        const handleLoadedMetadata=()=>{refreshDuration();};
+        const handleEnded=()=>{setPlaying(false);setAudioLoading(false);const idx=audioList.findIndex(a=>a.id===currentAudio?.id);if(idx>=0&&idx<audioList.length-1)playAudio(audioList[idx+1]);};
+        const handleError=(e)=>{console.error('Audio error:',e);setPlaying(false);setAudioLoading(false);showToast(t('audio.could_not_load'),'err');};
+        const handleCanPlay=()=>{setAudioLoading(false);refreshDuration();if(playing&&audioRef.current)audioRef.current.play().catch(err=>{console.warn('Playback failed:',err.name);setPlaying(false);});};
+        const handleWaiting=()=>setAudioLoading(true);
+        const handlePlaying=()=>{setAudioLoading(false);refreshDuration();};
         audio.addEventListener('timeupdate',handleTimeUpdate);
         audio.addEventListener('loadedmetadata',handleLoadedMetadata);
+        // durationchange/progress: bei grossen Dateien meldet der Browser die
+        // Dauer erst nach dem Nachladen (vorher Infinity) – Anzeige nachziehen.
+        audio.addEventListener('durationchange',refreshDuration);
+        audio.addEventListener('progress',refreshDuration);
         audio.addEventListener('ended',handleEnded);
         audio.addEventListener('error',handleError);
         audio.addEventListener('canplay',handleCanPlay);
-        return()=>{audio.removeEventListener('timeupdate',handleTimeUpdate);audio.removeEventListener('loadedmetadata',handleLoadedMetadata);audio.removeEventListener('ended',handleEnded);audio.removeEventListener('error',handleError);audio.removeEventListener('canplay',handleCanPlay);};
+        audio.addEventListener('waiting',handleWaiting);
+        audio.addEventListener('playing',handlePlaying);
+        return()=>{audio.removeEventListener('timeupdate',handleTimeUpdate);audio.removeEventListener('loadedmetadata',handleLoadedMetadata);audio.removeEventListener('durationchange',refreshDuration);audio.removeEventListener('progress',refreshDuration);audio.removeEventListener('ended',handleEnded);audio.removeEventListener('error',handleError);audio.removeEventListener('canplay',handleCanPlay);audio.removeEventListener('waiting',handleWaiting);audio.removeEventListener('playing',handlePlaying);};
       },[currentAudio,audioList,playing]);
+
+      // Die Player-Leisten werden erst nach dem Abspielstart gerendert; die
+      // Dauer-Anzeige deshalb nach dem Rendern erneut setzen.
+      useEffect(()=>{refreshDuration();},[currentAudio,playing]);
 
       
 
@@ -1890,7 +1915,7 @@ const AudioPlayerScreen = () => {
               onClick={(e)=>{e.stopPropagation();deleteAudio(audio.id);}}>🗑</button>
           : <button className="ft-jb-row-b"
               onClick={(e)=>{e.stopPropagation();on&&playing?pauseAudio():playAndRemember(audio);}}>
-              {on&&playing?'⏸':'▶'}
+              {on && audioLoading ? '⏳' : (on&&playing?'⏸':'▶')}
             </button>}
       </div>
     );
@@ -2040,14 +2065,15 @@ const AudioPlayerScreen = () => {
             </div>
             <div className="ft-jb-prog-t">
               <span id="jb-player-time">0:00</span>
-              <span id="jb-player-dur">0:00</span>
+              <span id="jb-player-dur">–:––</span>
             </div>
           </div>
           <button className="ft-jb-row-b" style={{width:28,height:28,fontSize:11}}
             onClick={playPrev} title={t('audio.previous')}>⏮</button>
           <button className="ft-jb-mini-b"
+            title={audioLoading ? t('common.loading') : undefined}
             onClick={()=>{ playing ? pauseAudio() : playAudio(currentAudio); }}>
-            {playing?'⏸':'▶'}
+            {audioLoading ? '⏳' : (playing?'⏸':'▶')}
           </button>
           <button className="ft-jb-row-b" style={{width:28,height:28,fontSize:11}}
             onClick={playNext} title={t('audio.next')}>⏭</button>
@@ -4336,7 +4362,7 @@ const AnimalQuizGame = ({ childId, onBack, onSave }) => {
       return(
         <div className="ft" style={{paddingBottom:130}}>
           <a className="ft-skip" href="#main-content">{t('a11y.skip')}</a>
-          <audio ref={audioRef} preload="auto" onError={(e) => console.error('Audio error:', e)} />
+          <audio ref={audioRef} preload="metadata" onError={(e) => console.error('Audio error:', e)} />
           {(screen==="home"||screen==="admin"||screen==="calendar")&&(
             <div className="ft-hdr">
               <div className="ft-hdr-top">
@@ -4410,7 +4436,7 @@ const AnimalQuizGame = ({ childId, onBack, onSave }) => {
                     color:'#fff', fontSize:14, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0
                   }}
                 >
-                  {playing ? '⏸' : '▶'}
+                  {audioLoading ? '⏳' : (playing ? '⏸' : '▶')}
                 </button>
                 <button onClick={playNext} style={{width:28,height:28,border:'none',borderRadius:7,cursor:'pointer',background:'rgba(255,255,255,0.06)',color:'#fff',fontSize:12,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>⏭</button>
                 <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
@@ -4429,7 +4455,7 @@ const AnimalQuizGame = ({ childId, onBack, onSave }) => {
                   <div id="dom-player-bar" style={{ height:'100%', background:'linear-gradient(90deg,#FF6B6B,#FFE66D)', borderRadius:99, width:'0%', transition:'width 0.1s' }} />
                 </div>
                 <span id="dom-player-dur" style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.3)', width:32, textAlign:'center', flexShrink:0 }}>
-                  0:00
+                  –:––
                 </span>
               </div>
             </div>

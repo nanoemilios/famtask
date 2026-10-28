@@ -157,34 +157,75 @@ if ($action === 'audio') {
     ];
     $mimeType = $mimeTypes[$ext] ?? 'application/octet-stream';
 
+    $size = (int)filesize($filePath);
+
+    // Kein Output-Buffering und keine Kompression fuer Audio: sonst faellt der
+    // Content-Length-Header weg, die Antwort kommt chunked und der Browser
+    // zeigt bei grossen MP3s "Infinity" als Dauer und laedt die ganze Datei,
+    // bevor er abspielt.
+    while (ob_get_level() > 0) { @ob_end_clean(); }
+    @ini_set('zlib.output_compression', '0');
+    @set_time_limit(0);
+
     // HTTP-Header für Streaming mit Range-Support
     header('Content-Type: ' . $mimeType);
     header('Accept-Ranges: bytes');
-    header('Content-Length: ' . filesize($filePath));
+    header('Cache-Control: private, max-age=3600');
+    header('X-Content-Type-Options: nosniff');
+    header('Content-Disposition: inline; filename="' . basename($filePath) . '"');
 
-    // Range-Request Support
-    if (isset($_SERVER['HTTP_RANGE'])) {
-        if (preg_match('/bytes=(\d+)-(\d*)/', $_SERVER['HTTP_RANGE'], $matches)) {
-            $start = intval($matches[1]);
-            $end = $matches[2] === '' ? filesize($filePath) - 1 : intval($matches[2]);
+    // Range-Request auswerten: "bytes=0-1023", "bytes=1000-" und "bytes=-1024"
+    // (Suffix-Form nutzen Safari/iOS gern; ohne Unterstützung liefern wir die
+    // komplette 50-MB-Datei aus).
+    $start = 0;
+    $end = $size - 1;
+    $partial = false;
 
-            if ($start <= $end && $end < filesize($filePath)) {
-                header('HTTP/1.1 206 Partial Content');
-                header('Content-Range: bytes ' . $start . '-' . $end . '/' . filesize($filePath));
-                header('Content-Length: ' . ($end - $start + 1));
+    if (isset($_SERVER['HTTP_RANGE']) && preg_match('/^bytes=(\d*)-(\d*)$/', trim($_SERVER['HTTP_RANGE']), $m)) {
+        $from = $m[1];
+        $to = $m[2];
 
-                $fp = fopen($filePath, 'rb');
-                fseek($fp, $start);
-                echo fread($fp, $end - $start + 1);
-                fclose($fp);
-                exit;
-            }
+        if ($from === '' && $to !== '') {
+            // Suffix: die letzten N Bytes
+            $start = max(0, $size - (int)$to);
+            $partial = true;
+        } elseif ($from !== '') {
+            $start = (int)$from;
+            if ($to !== '') { $end = min((int)$to, $size - 1); }
+            $partial = true;
+        }
+
+        if ($partial && ($start > $end || $start >= $size)) {
+            http_response_code(416);
+            header('Content-Range: bytes */' . $size);
+            header('Content-Length: 0');
+            exit;
         }
     }
 
-    // Normale Dateiausgabe
-    header('Content-Disposition: inline; filename="' . basename($filePath) . '"');
-    readfile($filePath);
+    if ($partial) {
+        http_response_code(206);
+        header('Content-Range: bytes ' . $start . '-' . $end . '/' . $size);
+    }
+    header('Content-Length: ' . ($end - $start + 1));
+
+    // In Bloecken ausliefern statt die ganze Datei in den Speicher zu laden
+    // (50 MB pro Request sprengen sonst schnell das memory_limit).
+    $fp = fopen($filePath, 'rb');
+    if (!$fp) {
+        http_response_code(500);
+        exit;
+    }
+    if ($start > 0) { fseek($fp, $start); }
+    $remaining = $end - $start + 1;
+    while ($remaining > 0 && !feof($fp)) {
+        $chunk = fread($fp, min(65536, $remaining));
+        if ($chunk === false || $chunk === '') { break; }
+        echo $chunk;
+        $remaining -= strlen($chunk);
+        flush();
+    }
+    fclose($fp);
     exit;
 }
 
