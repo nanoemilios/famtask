@@ -10,14 +10,18 @@ ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 if (!ini_get('date.timezone')) { @date_default_timezone_set('UTC'); }
 
-header('Content-Type: application/json; charset=utf-8');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+$action = $_GET['action'] ?? 'tracks';
+
+// Audio setzt seine eigenen Header (inklusive Cache-Dauer und Content-Length);
+// ein zweites, widerspruechliches Cache-Control wuerde es nur ungueltig machen.
+if ($action !== 'audio') {
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+}
 
 // Musik-Metadaten (ID3/MP4) – Titel, Interpret, Album, eingebettete Bilder.
 // Fehlt die Datei, laeuft alles weiter wie bisher (Dateiname und Ordnername).
 if (is_file(__DIR__ . '/id3.php')) { require_once __DIR__ . '/id3.php'; }
-
-$action = $_GET['action'] ?? 'tracks';
 
 // ─────────────────────────────────────────────────────────────────
 // Scan Audio-Verzeichnis für Alben und Songs
@@ -1007,12 +1011,19 @@ function jbSongEntry(string $path, string $file, string $album, bool $isSingle):
     if (!$isSingle) { $src .= '&album=' . urlencode($album); }
     $src .= '&file=' . urlencode($file);
 
+    // Direkter Dateizugriff (audio/…): Webserver liefern dabei Content-Length
+    // und beantworten Range-Requests selbst – Wiedergabe startet sofort und die
+    // Dauer ist bekannt. Manche Hoster beschneiden beides bei PHP-Antworten,
+    // deshalb bleibt der PHP-Weg als Rueckfallebene in 'src'.
+    $srcStatic = 'audio/' . ($isSingle ? '' : rawurlencode($album) . '/') . rawurlencode($file);
+
     return [
         'title'    => $title,
         'artist'   => $artist,
         'albumTag' => $albumTag,
         'hasCover' => $hasCover,
         'src'      => $src,
+        'srcStatic'=> $srcStatic,
         'file'     => $file,
         'album'    => $album,
     ];

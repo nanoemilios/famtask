@@ -1521,6 +1521,7 @@ const ANIMALS = [
       const audioRef=useRef(null);
       const audioTimeRef=useRef(0);
       const audioDurationRef=useRef(0);
+      const audioFallbackTriedRef=useRef(false); // PHP-Weg schon versucht?
       const [audioVolume,setAudioVolume]=useState(0.7);
 
       // ── Jukebox pro Kind (serverseitig synchronisiert) ─────────────────────
@@ -1570,7 +1571,7 @@ const ANIMALS = [
       useEffect(()=>{try{localStorage.setItem('ft-ab',JSON.stringify(albums));}catch(e){}},[albums]);
       useEffect(()=>{if(audioRef.current)audioRef.current.volume=audioVolume;},[audioVolume]);
 
-      const playAudio=(audio)=>{setCurrentAudio(audio);setPlaying(true);setAudioLoading(true);const a=audioRef.current;if(!a)return;a.pause();a.src=audio.src;a.load();a.play().catch(err=>{if(err.name==='NotAllowedError'){setPlaying(false);setAudioLoading(false);showToast(t('audio.autoplay_blocked'),'err');}else{console.warn('Playback failed:',err.name);}});};
+      const playAudio=(audio)=>{setCurrentAudio(audio);setPlaying(true);setAudioLoading(true);audioFallbackTriedRef.current=false;const a=audioRef.current;if(!a)return;a.pause();a.src=audio.src;a.load();a.play().catch(err=>{if(err.name==='NotAllowedError'){setPlaying(false);setAudioLoading(false);showToast(t('audio.autoplay_blocked'),'err');}else{console.warn('Playback failed:',err.name);}});};
       const pauseAudio=()=>{if(audioRef.current)audioRef.current.pause();setPlaying(false);setAudioLoading(false);};
       const addAudio=(file)=>{const reader=new FileReader();reader.onload=e=>{const aud={id:uid(),name:file.name.replace(/\.[^.]+$/,''),src:e.target.result,duration:0};setAudioList(p=>[...p,aud]);showToast(t('audio.added',{name:aud.name}));};reader.readAsDataURL(file);};
       const deleteAudio=(id)=>{if(currentAudio?.id===id)pauseAudio();setAudioList(p=>p.filter(a=>a.id!==id));setAlbums(p=>{const r=p.map(a=>({...a,songs:a.songs.filter(s=>s.id!==id)}));return r.filter(a=>a.songs.length>0);});};
@@ -1617,7 +1618,21 @@ const ANIMALS = [
         };
         const handleLoadedMetadata=()=>{refreshDuration();};
         const handleEnded=()=>{setPlaying(false);setAudioLoading(false);const idx=audioList.findIndex(a=>a.id===currentAudio?.id);if(idx>=0&&idx<audioList.length-1)playAudio(audioList[idx+1]);};
-        const handleError=(e)=>{console.error('Audio error:',e);setPlaying(false);setAudioLoading(false);showToast(t('audio.could_not_load'),'err');};
+        const handleError=(e)=>{
+          console.error('Audio error:',e);
+          // Direkter Dateizugriff gescheitert (z. B. audio/ gesperrt) → einmal
+          // ueber jukebox.php versuchen, bevor wir aufgeben.
+          const fb=currentAudio&&currentAudio.srcFallback;
+          if(fb&&!audioFallbackTriedRef.current){
+            audioFallbackTriedRef.current=true;
+            console.warn('Direkter Dateizugriff fehlgeschlagen, nutze jukebox.php');
+            audio.src=fb;
+            audio.load();
+            audio.play().catch(()=>{setPlaying(false);setAudioLoading(false);});
+            return;
+          }
+          setPlaying(false);setAudioLoading(false);showToast(t('audio.could_not_load'),'err');
+        };
         const handleCanPlay=()=>{setAudioLoading(false);refreshDuration();if(playing&&audioRef.current)audioRef.current.play().catch(err=>{console.warn('Playback failed:',err.name);setPlaying(false);});};
         const handleWaiting=()=>setAudioLoading(true);
         const handlePlaying=()=>{setAudioLoading(false);refreshDuration();};
@@ -1635,9 +1650,21 @@ const ANIMALS = [
         return()=>{audio.removeEventListener('timeupdate',handleTimeUpdate);audio.removeEventListener('loadedmetadata',handleLoadedMetadata);audio.removeEventListener('durationchange',refreshDuration);audio.removeEventListener('progress',refreshDuration);audio.removeEventListener('ended',handleEnded);audio.removeEventListener('error',handleError);audio.removeEventListener('canplay',handleCanPlay);audio.removeEventListener('waiting',handleWaiting);audio.removeEventListener('playing',handlePlaying);};
       },[currentAudio,audioList,playing]);
 
-      // Die Player-Leisten werden erst nach dem Abspielstart gerendert; die
-      // Dauer-Anzeige deshalb nach dem Rendern erneut setzen.
-      useEffect(()=>{refreshDuration();},[currentAudio,playing]);
+      // Nach JEDEM Render die Player-Anzeigen aus den Refs setzen: die
+      // Jukebox-Ansicht wird bei jedem Eltern-Render neu aufgebaut (schon die
+      // Uhrzeit im Kopf loest das sekundlich aus). Dabei entstehen Zeit- und
+      // Dauer-Spans mit ihren Startwerten neu – ohne diesen Abgleich wuerde
+      // die Anzeige waehrend der Wiedergabe auf 0:00 zurueckspringen.
+      useEffect(()=>{
+        const a=audioRef.current;
+        const pos=a?a.currentTime:audioTimeRef.current;
+        const txt=fmtTime(pos||0);
+        ['dom-player-time','jb-player-time'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=txt;});
+        const d=knownDuration(a)||audioDurationRef.current;
+        const pct=(a&&d>0)?Math.min(100,(a.currentTime/d)*100):0;
+        ['dom-player-bar','jb-player-bar'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.width=pct+'%';});
+        refreshDuration();
+      });
 
       
 
@@ -1704,7 +1731,8 @@ const AudioPlayerScreen = () => {
           songs: (a.songs || []).map(s => ({
             id: uid(),
             name: (a.album !== 'Singles' && a.album ? a.album + ' — ' : '') + s.title,
-            src: s.src,
+            src: s.srcStatic || s.src,
+            srcFallback: s.srcStatic ? s.src : '',
             duration: 0,
             title: s.title,
             artist: s.artist || '',

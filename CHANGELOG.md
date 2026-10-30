@@ -81,6 +81,14 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
   nachgezogen, sobald der Browser die Länge kennt (`durationchange`)
 - Audio-Antworten sind eine Stunde cachebar (`private, max-age=3600`) statt
   `no-store`
+- Server-Titel laufen über den direkten Dateizugriff (`audio/…`): Webserver
+  liefern dabei `Content-Length` und beantworten Range-Requests selbst. Nötig,
+  weil der geteilte Hoster beides bei PHP-Antworten beschneidet (gemessen:
+  `Range` wurde ignoriert, `Content-Length` fehlte). Schlägt der Direktzugriff
+  fehl, greift automatisch `jukebox.php?action=audio` als Rückfallebene
+- Zeit- und Dauer-Anzeige werden nach jedem Render aus den Refs gesetzt; die
+  Jukebox-Ansicht wird beim sekündlichen Uhrzeit-Update neu aufgebaut und
+  sprang während der Wiedergabe sonst auf 0:00 zurück
 
 **Design-System & Social-Sharing**
 - Design-Tokens in `styles.css` (`:root`): Farben, Verläufe, Text- und
