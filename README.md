@@ -58,6 +58,9 @@ Familien-Aufgaben-App mit HTML-Frontend (React) und PHP-Backend (MariaDB).
 - Globale Einstellungen & Admin-Panel via `api.php?action=admin`
 - Backup/Restore via `action=backup` / `action=restore`
 - Statistik-Endpunkte (`action=stats`)
+- Programm-Update: `action=check_update` (1× pro Tag, gecacht) und
+  `action=self_update` (Admin-PIN, lädt `famtask.zip` aus dem neuesten
+  GitHub-Release, sichert die ersetzten Dateien unter `backup/`)
 
 ### Technisch
 - Multi-Language (i18n) – Deutsch Standard, erweiterbar
@@ -151,6 +154,35 @@ Kopiere `.famtask_cfg.php.example` zu `.famtask_cfg.php` und passe an:
 Optional über die Umgebungsvariable `FAMTASK_REMOTE_ROOTS` (Komma-getrennt)
 einschränken, aus welchen Verzeichnissen „Gemountetes Laufwerk"-Quellen lesen
 dürfen. Standard: `/mnt,/media,/srv,/net,/Volumes`.
+
+## Updates
+
+FamTask prüft höchstens einmal pro Tag, ob im GitHub-Release eine neuere
+Fassung liegt (`api.php?action=check_update`). Die Antwort wird serverseitig
+24 h in der Datenbank zwischengespeichert, damit das GitHub-API-Limit nicht
+stört und keine Anfrage pro Seitenaufruf entsteht.
+
+Ist etwas Neues verfügbar, erscheint in der App ein Hinweisbalken:
+
+- **neue Version** – wenn das Release einen höheren Tag hat (z. B. `v1.5.1`)
+- **neue Fassung** – wenn die Version gleich bleibt, aber `famtask.zip` neu
+  gebaut wurde (Bugfix-Release ohne Versionssprung)
+
+„Aktualisieren" verlangt den Admin-PIN und ruft `api.php?action=self_update`:
+
+1. lädt `https://github.com/nanoemilios/famtask/releases/latest/download/famtask.zip`
+   (feste URL, keine Nutzereingabe)
+2. prüft das ZIP (gültig, enthält `api.php`, keine Pfade mit `..`)
+3. sichert die zu ersetzenden Dateien nach `backup/famtask-<version>-<datum>.zip`
+4. schreibt die Dateien über die Installation, führt die DB-Migrationen aus
+5. die App lädt anschliessend neu
+
+Nicht angetastet werden `.famtask_cfg.php` (Zugangsdaten) und `audio/`
+(Hörspiele). Voraussetzung sind die PHP-Extension `zip` und Schreibrechte des
+Webserver-Benutzers im Programmverzeichnis.
+
+Dieselben Schritte stehen im Admin-Panel unter **Update → Programm-Update**
+(„Nach Updates suchen" / „Jetzt aktualisieren").
 
 ## Sicherheit
 

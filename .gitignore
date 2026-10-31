@@ -25,3 +25,7 @@ Thumbs.db
 # Python
 __pycache__/
 *.pyc
+
+# Update-Artefakte (Rollback-ZIPs, Temp-Download)
+backup/
+.famtask_update.zip

@@ -14,6 +14,10 @@
 
 define('APP_VERSION', '1.5.0');
 define('CFG',         __DIR__ . '/.famtask_cfg.php');
+// ── Update-Quelle (fest verdrahtet – bewusst keine Nutzer-URL) ───────────────
+define('UPDATE_ZIP_URL', 'https://github.com/nanoemilios/famtask/releases/latest/download/famtask.zip');
+define('UPDATE_API_URL', 'https://api.github.com/repos/nanoemilios/famtask/releases/latest');
+define('UPDATE_CHECK_TTL', 86400);   // hoechstens 1x pro Tag nach GitHub fragen
 // ── PHP-Bootstrap: keine HTML-Fehler ins JSON, Timezone nur falls ungesetzt ──
 error_reporting(E_ALL & ~E_DEPRECATED);
 ini_set('display_errors', '0');
@@ -268,6 +272,17 @@ if ($action === 'ical') {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
     handleIcal(getDB(getCfg())); exit;
 }
+// Programm-Update: Pruefung (fuer alle) und Installation (nur Admin)
+if ($action === 'check_update') {
+    if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
+    handleCheckUpdate(getDB(getCfg())); exit;
+}
+if ($action === 'self_update') {
+    if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
+    $pdo = getDB(getCfg());
+    requireAdmin($pdo);
+    handleSelfUpdate($pdo, $MIGRATIONS); exit;
+}
 if ($action === 'ytplaylist') {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Not configured']); exit; }
     requireAdmin(getDB(getCfg()));
@@ -391,28 +406,203 @@ function handleTestDb() {
 // ══════════════════════════════════════════════════════════════════════════════
 function handleUpdate(array $migrations) {
     if (!file_exists(CFG)) { jsonOut(['ok'=>false,'msg'=>'Noch nicht installiert.']); return; }
-    $pdo = getDB(getCfg()); $dbVer = getDbVersion($pdo); $ran = []; $errors = [];
+    $pdo = getDB(getCfg());
+    $res = runMigrations($pdo, $migrations);
+    if ($res['errors']) jsonOut(['ok'=>false,'msg'=>'Fehler: '.implode(', ',$res['errors']),'ran'=>$res['ran']]);
+    elseif (empty($res['ran'])) jsonOut(['ok'=>true,'msg'=>'Bereits aktuell.','db_version'=>APP_VERSION,'app_version'=>APP_VERSION]);
+    else jsonOut(['ok'=>true,'msg'=>'Update erfolgreich! Migrationen: '.implode(', ',$res['ran']),'db_version'=>APP_VERSION,'app_version'=>APP_VERSION]);
+}
+
+// Fuehrt alle ausstehenden DB-Migrationen aus (auch vom Programm-Update genutzt).
+function runMigrations(PDO $pdo, array $migrations): array {
+    $dbVer = getDbVersion($pdo); $ran = []; $errors = [];
     foreach ($migrations as $targetVer => $sql) {
         if (version_compare($dbVer, $targetVer, '<')) {
             try {
                 $stmts = array_filter(array_map('trim', explode(';', $sql)));
-                $hasSql = false;
                 foreach ($stmts as $stmt) {
-                    if ($stmt && strpos($stmt, 'SELECT') !== 0) {
-                        $pdo->exec($stmt);
-                        $hasSql = true;
-                    }
+                    if ($stmt && strpos($stmt, 'SELECT') !== 0) $pdo->exec($stmt);
                 }
                 // Auch wenn kein SQL ausgeführt wurde, Version aktualisieren
-                $pdo->prepare("INSERT INTO famtask_meta (meta_key,meta_value) VALUES ('db_version',?) ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)")->execute([$targetVer]);
+                metaSet($pdo, 'db_version', $targetVer);
                 $dbVer = $targetVer; $ran[] = $targetVer;
             } catch (PDOException $e) { $errors[] = "v$targetVer: ".$e->getMessage(); break; }
         }
     }
-    if (empty($errors)) $pdo->prepare("INSERT INTO famtask_meta (meta_key,meta_value) VALUES ('db_version',?) ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)")->execute([APP_VERSION]);
-    if ($errors) jsonOut(['ok'=>false,'msg'=>'Fehler: '.implode(', ',$errors),'ran'=>$ran]);
-    elseif (empty($ran)) jsonOut(['ok'=>true,'msg'=>'Bereits aktuell.','db_version'=>APP_VERSION,'app_version'=>APP_VERSION]);
-    else jsonOut(['ok'=>true,'msg'=>'Update erfolgreich! Migrationen: '.implode(', ',$ran),'db_version'=>APP_VERSION,'app_version'=>APP_VERSION]);
+    if (empty($errors)) metaSet($pdo, 'db_version', APP_VERSION);
+    return ['ran'=>$ran, 'errors'=>$errors, 'db_version'=>$dbVer];
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  PROGRAMM-UPDATE (ZIP aus dem GitHub-Release)
+// ══════════════════════════════════════════════════════════════════════════════
+function metaGet(PDO $pdo, string $key): ?string {
+    try {
+        $s = $pdo->prepare("SELECT meta_value FROM famtask_meta WHERE meta_key=?");
+        $s->execute([$key]);
+        $v = $s->fetchColumn();
+        return $v === false ? null : (string)$v;
+    } catch (PDOException $e) { return null; }
+}
+function metaSet(PDO $pdo, string $key, string $val): void {
+    try {
+        $pdo->prepare("INSERT INTO famtask_meta (meta_key,meta_value) VALUES (?,?) ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)")
+            ->execute([$key, $val]);
+    } catch (PDOException $e) {}
+}
+
+// Zeitpunkt der zuletzt installierten Fassung (Alt-Installationen: api.php).
+function updateInstalledAt(PDO $pdo): int {
+    $v = metaGet($pdo, 'installed_at');
+    if ($v !== null && ctype_digit($v) && (int)$v > 0) return (int)$v;
+    $t = @filemtime(__FILE__) ?: time();
+    metaSet($pdo, 'installed_at', (string)$t);
+    return $t;
+}
+
+// Fragt hoechstens 1x pro Tag das neueste GitHub-Release ab (Ergebnis in der DB
+// zwischengespeichert, damit das API-Limit von 60 Anfragen/Stunde nie stoert).
+function handleCheckUpdate(PDO $pdo): void {
+    header('Content-Type: application/json');
+    $now = time();
+    $cache = null;
+    $raw = metaGet($pdo, 'update_check');
+    if ($raw) { $c = json_decode($raw, true); if (is_array($c) && isset($c['t'])) $cache = $c; }
+
+    if (!$cache || ($now - (int)$cache['t']) > UPDATE_CHECK_TTL) {
+        $body = httpGet(UPDATE_API_URL, 10, ['Accept: application/vnd.github+json']);
+        $d = $body ? json_decode($body, true) : null;
+        if (!is_array($d) || empty($d['tag_name'])) {
+            // Fehler 6 h merken, damit nicht jeder Seitenaufruf nach draussen geht
+            $cache = ['t' => $now - UPDATE_CHECK_TTL + 21600, 'e' => 1];
+            metaSet($pdo, 'update_check', json_encode($cache));
+            jsonOut(['ok'=>false,'msg'=>'Versionsabfrage fehlgeschlagen.','current'=>APP_VERSION]);
+            return;
+        }
+        $asset = (is_array($d['assets'] ?? null) && count($d['assets'])) ? $d['assets'][0] : [];
+        $cache = [
+            't' => $now,
+            'v' => ltrim((string)$d['tag_name'], 'vV'),
+            'a' => !empty($asset['updated_at']) ? (int)strtotime((string)$asset['updated_at']) : 0,
+            's' => (int)($asset['size'] ?? 0),
+        ];
+        metaSet($pdo, 'update_check', json_encode($cache));
+    }
+    if (!empty($cache['e'])) {
+        jsonOut(['ok'=>false,'msg'=>'Versionsabfrage fehlgeschlagen (GitHub nicht erreichbar).','current'=>APP_VERSION]);
+        return;
+    }
+
+    $latest      = (string)($cache['v'] ?? APP_VERSION);
+    $installedAt = updateInstalledAt($pdo);
+    $assetTs     = (int)($cache['a'] ?? 0);
+    $versionNew  = version_compare($latest, APP_VERSION, '>');
+    // Gleiche Version, aber das Release-ZIP wurde neu gebaut (z. B. Bugfix ohne
+    // Versionssprung): 5 Minuten Toleranz fuer Installations-/Upload-Zeiten.
+    $artifactNew = (!$versionNew && $assetTs > $installedAt + 300);
+
+    jsonOut([
+        'ok'               => true,
+        'current'          => APP_VERSION,
+        'latest'           => $latest,
+        'update_available' => $versionNew,
+        'artifact_newer'   => $artifactNew,
+        'installed_at'     => $installedAt,
+        'artifact_at'      => $assetTs,
+        'zip_size'         => (int)($cache['s'] ?? 0),
+        'checked_at'       => (int)$cache['t'],
+    ]);
+}
+
+// Eintraege, die ein Update niemals ueberschreiben darf.
+function isSkipUpdateEntry(string $name): bool {
+    if ($name === '' || substr($name, -1) === '/') return true;
+    if (str_contains($name, '__MACOSX') || str_contains($name, '.DS_Store')) return true;
+    if (preg_match('#(^|/)\.famtask_cfg\.php$#', $name)) return true;
+    if ($name === 'audio' || str_starts_with($name, 'audio/')) return true;
+    if (str_starts_with($name, 'backup/')) return true;
+    if (str_ends_with(strtolower($name), '.zip')) return true;
+    return false;
+}
+
+// Laedt famtask.zip aus dem GitHub-Release, sichert die ersetzten Dateien und
+// schreibt das Update ueber die Installation. Nur mit Admin-Rechten erreichbar.
+function handleSelfUpdate(PDO $pdo, array $migrations): void {
+    header('Content-Type: application/json');
+    @set_time_limit(180);   // Download + Entpacken darf laenger dauern
+    if (!class_exists('ZipArchive')) { jsonOut(['ok'=>false,'msg'=>'Die PHP-Extension "zip" fehlt.']); return; }
+    $dir = __DIR__;
+    if (!is_writable($dir)) { jsonOut(['ok'=>false,'msg'=>'Keine Schreibrechte im Programmverzeichnis.']); return; }
+
+    $tmp = $dir . '/.famtask_update.zip';
+    $data = httpGet(UPDATE_ZIP_URL, 120);
+    if ($data === false || strlen($data) < 10000) { jsonOut(['ok'=>false,'msg'=>'Download des Updates fehlgeschlagen.']); return; }
+    if (@file_put_contents($tmp, $data) === false) { jsonOut(['ok'=>false,'msg'=>'Update konnte nicht zwischengespeichert werden.']); return; }
+
+    $zip = new ZipArchive;
+    if ($zip->open($tmp) !== true) { @unlink($tmp); jsonOut(['ok'=>false,'msg'=>'ZIP kann nicht geöffnet werden.']); return; }
+    $names = [];
+    for ($i = 0; $i < $zip->count(); $i++) $names[] = (string)$zip->getNameIndex($i);
+    foreach ($names as $n) {
+        if ($n === '' || $n[0] === '/' || str_contains($n, '..') || str_contains($n, '\\')) {
+            $zip->close(); @unlink($tmp);
+            jsonOut(['ok'=>false,'msg'=>'Ungültiger Eintrag im ZIP: '.$n]); return;
+        }
+    }
+    if (!in_array('api.php', $names, true)) {
+        $zip->close(); @unlink($tmp);
+        jsonOut(['ok'=>false,'msg'=>'ZIP enthält kein api.php.']); return;
+    }
+
+    // Rollback-Kopie der Dateien, die gleich ersetzt werden
+    $backupRel = 'backup/famtask-'.APP_VERSION.'-'.date('Ymd-His').'.zip';
+    $backupOk  = false;
+    if (@mkdir($dir.'/backup', 0755, true) || is_dir($dir.'/backup')) {
+        $bz = new ZipArchive;
+        if ($bz->open($dir.'/'.$backupRel, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+            foreach ($names as $n) {
+                if (isSkipUpdateEntry($n)) continue;
+                $f = $dir.'/'.$n;
+                if (is_file($f)) $bz->addFile($f, $n);
+            }
+            $backupOk = $bz->close();
+        }
+    }
+
+    $written = 0; $failed = '';
+    foreach ($names as $n) {
+        if (isSkipUpdateEntry($n)) continue;
+        $full = $dir.'/'.$n;
+        @mkdir(dirname($full), 0755, true);
+        if (!@copy('zip://'.$tmp.'#'.$n, $full)) { $failed = $n; break; }
+        $written++;
+    }
+    $zip->close(); @unlink($tmp);
+    if ($failed !== '') {
+        jsonOut(['ok'=>false,'msg'=>'Fehler beim Schreiben von '.$failed.($backupOk?' – Rollback: '.$backupRel:'')]);
+        return;
+    }
+    @mkdir($dir.'/audio', 0755, true);
+
+    // Version aus der frisch geschriebenen api.php lesen
+    $newVer = APP_VERSION;
+    $src = @file_get_contents($dir.'/api.php');
+    if ($src && preg_match("/APP_VERSION\s*=\s*'([^']+)'/", $src, $m)) $newVer = $m[1];
+
+    $mig = runMigrations($pdo, $migrations);
+    metaSet($pdo, 'installed_at', (string)time());
+    metaSet($pdo, 'update_check', '');   // naechste Pruefung holt den neuen Stand
+    if (function_exists('opcache_reset')) @opcache_reset();
+
+    jsonOut([
+        'ok'         => true,
+        'from'       => APP_VERSION,
+        'to'         => $newVer,
+        'files'      => $written,
+        'backup'     => $backupOk ? $backupRel : '',
+        'migrations' => $mig['ran'],
+        'msg'        => 'Update auf Version '.$newVer.' installiert.'
+    ]);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1611,6 +1801,21 @@ function showAdminPage(string $tab = ''): void {
     <?php if (!$status['update_available']): ?><div class="msg ok" style="display:block;margin-top:14px">✅ Datenbank ist aktuell.</div><?php else: ?><div class="warn-box" style="margin-bottom:0">Update von <strong><?= $status['db_version'] ?></strong> auf <strong><?= APP_VERSION ?></strong> verfügbar.</div><?php endif; ?>
     <button class="btn btn-sec" onclick="doUpdate()">🔄 Update ausführen</button>
     <div class="msg" id="update-msg"></div>
+
+    <h3 style="margin-top:28px">Programm-Update</h3>
+    <p style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:10px">Lädt <code>famtask.zip</code> aus dem neuesten GitHub-Release.</p>
+    <div class="info-row"><span class="info-key">Installiert am</span><span class="info-val" id="upd-installed">–</span></div>
+    <div class="info-row"><span class="info-key">Neueste Fassung</span><span class="info-val" id="upd-latest">–</span></div>
+    <div class="info-row"><span class="info-key">Release-ZIP vom</span><span class="info-val" id="upd-artifact">–</span></div>
+    <button class="btn btn-sec" onclick="checkUpd()">🔎 Nach Updates suchen</button>
+    <div class="msg" id="upd-check-msg"></div>
+    <button class="btn btn-pri" id="upd-btn" onclick="doSelfUpdate()">⬆️ Jetzt aktualisieren</button>
+    <div class="msg" id="upd-msg"></div>
+    <div class="warn-box" style="margin-top:14px;margin-bottom:0">
+      Die ersetzten Dateien werden vorher unter <code>backup/</code> gesichert.
+      <code>.famtask_cfg.php</code> und <code>audio/</code> bleiben unangetastet.
+      Nach dem Update ist ein Neuladen der App nötig.
+    </div>
   </div>
 
   <div class="section <?= $tab==='reinstall'?'active':'' ?>" id="tab-reinstall">
@@ -1671,6 +1876,11 @@ function goStep(n){for(let i=1;i<=3;i++){document.getElementById('i-p'+i).classL
 async function testConnection(){const btn=event.currentTarget;const el=document.getElementById('test-result');const d={host:document.getElementById('i-host').value,port:parseInt(document.getElementById('i-port').value)||3306,db:document.getElementById('i-db').value,user:document.getElementById('i-user').value,pass:document.getElementById('i-pass').value};setLoading(btn,true);el.className='test-result';el.textContent='';try{const r=await fetch('api.php?action=testdb',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});const res=await r.json();el.className='test-result '+(res.ok?'ok':'fail');el.textContent=res.ok?'Verbindung erfolgreich':res.msg;if(res.ok)document.getElementById('install-btn').classList.remove('btn-disabled');}catch(e){el.className='test-result fail';el.textContent='Netzwerkfehler: '+e.message;}setLoading(btn,false);}
 async function doInstall(){const btn=document.getElementById('install-btn');const d={host:document.getElementById('i-host').value,port:parseInt(document.getElementById('i-port').value)||3306,db:document.getElementById('i-db').value,user:document.getElementById('i-user').value,pass:document.getElementById('i-pass').value};setLoading(btn,true);try{const r=await fetch('api.php?action=install',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});const res=await r.json();if(res.ok){goStep(3);}else{showMsg('install-msg',false,res.msg);}}catch(e){showMsg('install-msg',false,'Netzwerkfehler: '+e.message);}setLoading(btn,false);}
 async function doUpdate(){const btn=event.currentTarget;setLoading(btn,true);try{const r=await fetch('api.php?action=update',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});const d=await r.json();showMsg('update-msg',d.ok,d.msg);if(d.ok)setTimeout(()=>location.reload(),2000);}catch(e){showMsg('update-msg',false,'Netzwerkfehler: '+e.message);}setLoading(btn,false);}
+
+// Programm-Update (ZIP aus dem GitHub-Release)
+function fmtTs(ts){return ts?new Date(ts*1000).toLocaleString('de-CH'):'–';}
+async function checkUpd(){const btn=event.currentTarget;setLoading(btn,true);try{const r=await fetch('api.php?action=check_update',{headers:{'Accept':'application/json'},cache:'no-store'});const d=await r.json();if(!d.ok){showMsg('upd-check-msg',false,d.msg||'Prüfung fehlgeschlagen.');}else{document.getElementById('upd-installed').textContent=fmtTs(d.installed_at);document.getElementById('upd-latest').textContent='v'+d.latest+' (installiert: v'+d.current+')';document.getElementById('upd-artifact').textContent=fmtTs(d.artifact_at);if(d.update_available)showMsg('upd-check-msg',true,'Neue Version v'+d.latest+' verfügbar.');else if(d.artifact_newer)showMsg('upd-check-msg',true,'Gleiche Version, aber ein neueres Release-ZIP ('+(d.zip_size?(Math.round(d.zip_size/1024)+' KB'):'')+').');else showMsg('upd-check-msg',true,'Alles aktuell.');}}catch(e){showMsg('upd-check-msg',false,'Netzwerkfehler: '+e.message);}setLoading(btn,false);}
+async function doSelfUpdate(){if(!confirm('FamTask jetzt aus dem GitHub-Release aktualisieren?\n\nDie ersetzten Dateien werden unter backup/ gesichert.'))return;const btn=document.getElementById('upd-btn');setLoading(btn,true);try{const r=await fetch('api.php?action=self_update',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});const d=await r.json();if(d.ok){try{await fetch('api.php?action=update',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});}catch(e){}}showMsg('upd-msg',d.ok,d.ok?('✅ '+d.msg+' ('+d.files+' Dateien'+(d.backup?', Backup: '+d.backup:'')+')'):(d.msg||'Update fehlgeschlagen.'));if(d.ok)setTimeout(()=>location.reload(),2500);}catch(e){showMsg('upd-msg',false,'Netzwerkfehler: '+e.message);}setLoading(btn,false);}
 async function doReinstall(){const btn=event.currentTarget;const d={host:document.getElementById('r-host').value,port:parseInt(document.getElementById('r-port').value)||3306,db:document.getElementById('r-db').value,user:document.getElementById('r-user').value,pass:document.getElementById('r-pass').value};setLoading(btn,true);try{const r=await fetch('api.php?action=install',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});const res=await r.json();showMsg('reinstall-msg',res.ok,res.msg);if(res.ok)setTimeout(()=>location.reload(),1500);}catch(e){showMsg('reinstall-msg',false,'Netzwerkfehler: '+e.message);}setLoading(btn,false);}
 
 async function downloadBackup(e){const btn=e.currentTarget;const scope=(document.querySelector('input[name=\"backup-scope\"]:checked')?.value)||'all';const fc=(document.getElementById('backup-fc')?.value||'').trim();const msgId='backup-msg-download';setLoading(btn,true);try{let url='api.php?action=backup&scope='+encodeURIComponent(scope);if(scope==='family'){if(!fc){showMsg(msgId,false,'Bitte Familiencode angeben');setLoading(btn,false);return;}url+='&fc='+encodeURIComponent(fc);}const r=await fetch(url,{headers:{'Accept':'application/json'}});if(!r.ok){let t='';try{t=await r.text();}catch(e){}showMsg(msgId,false,'Backup fehlgeschlagen: '+t);setLoading(btn,false);return;}const blob=await r.blob();let filename='famtask-backup.json';const cd=r.headers.get('Content-Disposition');if(cd&&cd.includes('filename=')){filename=cd.split('filename=')[1].trim();filename=filename.replace(/^\"|\"$/g,'');}const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();showMsg(msgId,true,'Backup heruntergeladen.');}catch(e){showMsg(msgId,false,'Fehler: '+e.message);}setLoading(btn,false);}

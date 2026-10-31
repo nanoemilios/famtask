@@ -778,4 +778,13 @@ window._langData = {
   "remote.unreachable": "remote.php에 연결할 수 없습니다 – 서버에서 이 파일을 실행 중인가요?",
   "remote.note_title": "SMB/CIFS 및 NFS 안내",
   "remote.note_body": "PHP는 네트워크 파일 시스템을 스스로 마운트할 수 없습니다. Samba 및 NFS 공유의 경우 호스트가 드라이브를 마운트하고 폴더를 bind mount로 컨테이너에 전달해야 합니다 – docker-compose.yml 참고. 허용된 기본 경로: {roots}.",
+  "upd.available": "FamTask {version} 사용 가능",
+  "upd.artifact": "새 빌드가 있습니다",
+  "upd.sub": "설치됨: {current}",
+  "upd.sub_artifact": "릴리스가 업데이트되었습니다",
+  "upd.now": "업데이트",
+  "upd.later": "나중에",
+  "upd.running": "업데이트 중 …",
+  "upd.done": "{version}(으)로 업데이트됨 – 페이지를 새로 고칩니다",
+  "upd.failed": "업데이트 실패",
 };

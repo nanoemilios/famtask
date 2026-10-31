@@ -810,4 +810,13 @@ window._langData = {
   "legal.terms.s7_text": "Es gilt das Recht der Schweiz. Erfüllungsort ist der Wohnsitz des Autors.",
   "legal.terms.s8": "8. Kontakt",
   "legal.terms.s8_text": "Bei Fragen zu diesen Nutzungsbedingungen wende dich bitte an:",
+  "upd.available": "FamTask {version} verfügbar",
+  "upd.artifact": "Neue Fassung verfügbar",
+  "upd.sub": "Installiert: {current}",
+  "upd.sub_artifact": "Das Release wurde aktualisiert",
+  "upd.now": "Aktualisieren",
+  "upd.later": "Später",
+  "upd.running": "Update läuft …",
+  "upd.done": "Update auf {version} installiert – Seite wird neu geladen",
+  "upd.failed": "Update fehlgeschlagen",
 };

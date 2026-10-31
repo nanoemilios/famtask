@@ -9,6 +9,25 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+
+**Automatische Versionsprüfung & Update aus dem GitHub-Release**
+- `api.php?action=check_update` fragt höchstens 1× pro Tag das neueste
+  GitHub-Release ab und cacht die Antwort 24 h in der Datenbank (kein
+  API-Limit, keine Anfrage pro Seitenaufruf). Erkannt werden sowohl eine neue
+  Version (`tag_name`) als auch ein neu gebautes Release-ZIP bei gleicher
+  Version (`updated_at` des Assets)
+- Die App zeigt dann einen Hinweisbalken „FamTask {version} verfügbar" bzw.
+  „Neue Fassung verfügbar" mit „Aktualisieren" (Admin-PIN) und „Später"
+- `api.php?action=self_update` (nur mit Admin-Rechten) lädt `famtask.zip` aus
+  dem fest verdrahteten Release-Pfad, prüft das ZIP, sichert die ersetzten
+  Dateien nach `backup/famtask-<version>-<datum>.zip`, schreibt das Update und
+  führt die DB-Migrationen aus. `.famtask_cfg.php` und `audio/` bleiben
+  unangetastet
+- Admin-Panel → Update: „Nach Updates suchen" und „Jetzt aktualisieren" mit
+  Anzeige von Installationsdatum, neuester Version und Release-Zeitpunkt
+- Texte in allen 19 Sprachen (`upd.*`)
+
 ### Geändert
 
 **Icon & PWA**

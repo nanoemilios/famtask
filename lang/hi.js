@@ -778,4 +778,13 @@ window._langData = {
   "remote.unreachable": "remote.php तक नहीं पहुँचा जा सकता – क्या सर्वर यह फ़ाइल चला रहा है?",
   "remote.note_title": "SMB/CIFS और NFS पर ध्यान दें",
   "remote.note_body": "PHP स्वयं नेटवर्क फ़ाइल सिस्टम माउंट नहीं कर सकता। Samba और NFS शेयरों के लिए होस्ट को ड्राइव माउंट करके फ़ोल्डर को bind mount द्वारा कंटेनर तक भेजना होगा – docker-compose.yml देखें। अनुमत मूल पथ: {roots}।",
+  "upd.available": "FamTask {version} उपलब्ध है",
+  "upd.artifact": "नया संस्करण उपलब्ध है",
+  "upd.sub": "इंस्टॉल: {current}",
+  "upd.sub_artifact": "रिलीज़ अपडेट हो गया है",
+  "upd.now": "अपडेट करें",
+  "upd.later": "बाद में",
+  "upd.running": "अपडेट चल रहा है …",
+  "upd.done": "{version} पर अपडेट हो गया – पेज फिर से लोड हो रहा है",
+  "upd.failed": "अपडेट विफल",
 };

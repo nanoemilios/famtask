@@ -807,4 +807,13 @@ window._langData = {
   "remote.unreachable": "无法访问 remote.php – 服务器是否在运行此文件？",
   "remote.note_title": "关于 SMB/CIFS 和 NFS",
   "remote.note_body": "PHP 无法自行挂载网络文件系统。对于 Samba 和 NFS 共享，主机必须挂载驱动器，并通过 bind mount 将文件夹传入容器 – 参见 docker-compose.yml。允许的基础路径：{roots}。",
+  "upd.available": "FamTask {version} 可用",
+  "upd.artifact": "有新版本可用",
+  "upd.sub": "已安装：{current}",
+  "upd.sub_artifact": "发布包已更新",
+  "upd.now": "更新",
+  "upd.later": "稍后",
+  "upd.running": "正在更新 …",
+  "upd.done": "已更新到 {version} – 正在重新加载页面",
+  "upd.failed": "更新失败",
 };

@@ -778,4 +778,13 @@ window._langData = {
   "remote.unreachable": "remote.php tidak dapat dijangkau – apakah server menjalankan file ini?",
   "remote.note_title": "Catatan tentang SMB/CIFS dan NFS",
   "remote.note_body": "PHP tidak dapat me-mount sistem file jaringan sendiri. Untuk berbagi Samba dan NFS, host harus me-mount drive dan meneruskan folder ke kontainer melalui bind mount – lihat docker-compose.yml. Jalur dasar yang diizinkan: {roots}.",
+  "upd.available": "FamTask {version} tersedia",
+  "upd.artifact": "Versi baru tersedia",
+  "upd.sub": "Terpasang: {current}",
+  "upd.sub_artifact": "Rilis telah diperbarui",
+  "upd.now": "Perbarui",
+  "upd.later": "Nanti",
+  "upd.running": "Pembaruan berjalan …",
+  "upd.done": "Diperbarui ke {version} – memuat ulang halaman",
+  "upd.failed": "Pembaruan gagal",
 };

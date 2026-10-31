@@ -778,4 +778,13 @@ window._langData = {
   "remote.unreachable": "เข้าถึง remote.php ไม่ได้ – เซิร์ฟเวอร์รันไฟล์นี้อยู่หรือไม่?",
   "remote.note_title": "หมายเหตุเกี่ยวกับ SMB/CIFS และ NFS",
   "remote.note_body": "PHP ไม่สามารถเมาท์ระบบไฟล์เครือข่ายได้เอง สำหรับแชร์ Samba และ NFS โฮสต์ต้องเมาท์ไดรฟ์และส่งโฟลเดอร์เข้าไปในคอนเทนเนอร์ด้วย bind mount – ดู docker-compose.yml เส้นทางฐานที่อนุญาต: {roots}",
+  "upd.available": "มี FamTask {version} แล้ว",
+  "upd.artifact": "มีเวอร์ชันใหม่",
+  "upd.sub": "ติดตั้งแล้ว: {current}",
+  "upd.sub_artifact": "อัปเดตรีลีสแล้ว",
+  "upd.now": "อัปเดต",
+  "upd.later": "ไว้ภายหลัง",
+  "upd.running": "กำลังอัปเดต …",
+  "upd.done": "อัปเดตเป็น {version} แล้ว – กำลังโหลดหน้าใหม่",
+  "upd.failed": "อัปเดตล้มเหลว",
 };

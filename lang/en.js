@@ -782,4 +782,13 @@ window._langData = {
   "legal.terms.s7_text": "Swiss law applies. The place of performance is the domicile of the author.",
   "legal.terms.s8": "8. Contact",
   "legal.terms.s8_text": "If you have any questions about these terms of service, please contact:",
+  "upd.available": "FamTask {version} available",
+  "upd.artifact": "New build available",
+  "upd.sub": "Installed: {current}",
+  "upd.sub_artifact": "The release has been updated",
+  "upd.now": "Update",
+  "upd.later": "Later",
+  "upd.running": "Update in progress …",
+  "upd.done": "Updated to {version} – reloading page",
+  "upd.failed": "Update failed",
 };

@@ -778,4 +778,13 @@ window._langData = {
   "remote.unreachable": "Không truy cập được remote.php – máy chủ có đang chạy tệp này không?",
   "remote.note_title": "Lưu ý về SMB/CIFS và NFS",
   "remote.note_body": "PHP không thể tự gắn kết hệ thống tệp mạng. Với chia sẻ Samba và NFS, máy chủ phải gắn kết ổ đĩa và truyền thư mục vào container bằng bind mount – xem docker-compose.yml. Đường dẫn gốc được phép: {roots}.",
+  "upd.available": "FamTask {version} đã có",
+  "upd.artifact": "Đã có bản mới",
+  "upd.sub": "Đã cài: {current}",
+  "upd.sub_artifact": "Bản phát hành đã được cập nhật",
+  "upd.now": "Cập nhật",
+  "upd.later": "Để sau",
+  "upd.running": "Đang cập nhật …",
+  "upd.done": "Đã cập nhật lên {version} – đang tải lại trang",
+  "upd.failed": "Cập nhật thất bại",
 };

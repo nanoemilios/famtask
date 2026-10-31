@@ -778,4 +778,13 @@ window._langData = {
   "remote.unreachable": "يتعذّر الوصول إلى remote.php – هل يشغّل الخادم هذا الملف؟",
   "remote.note_title": "ملاحظة حول SMB/CIFS وNFS",
   "remote.note_body": "لا يستطيع PHP تركيب أنظمة ملفات الشبكة بنفسه. بالنسبة لمشاركات Samba وNFS يجب على المضيف تركيب القرص وتمرير المجلد إلى الحاوية عبر bind mount – انظر docker-compose.yml. المسارات الأساسية المسموح بها: {roots}.",
+  "upd.available": "يتوفّر FamTask {version}",
+  "upd.artifact": "يتوفّر إصدار جديد",
+  "upd.sub": "المثبّت: {current}",
+  "upd.sub_artifact": "تم تحديث الإصدار المنشور",
+  "upd.now": "تحديث",
+  "upd.later": "لاحقًا",
+  "upd.running": "جارٍ التحديث …",
+  "upd.done": "تم التحديث إلى {version} – يجري إعادة تحميل الصفحة",
+  "upd.failed": "فشل التحديث",
 };

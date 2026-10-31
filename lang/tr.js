@@ -778,4 +778,13 @@
   "remote.unreachable": "remote.php erişilemiyor – sunucu bu dosyayı çalıştırıyor mu?",
   "remote.note_title": "SMB/CIFS ve NFS hakkında not",
   "remote.note_body": "PHP ağ dosya sistemlerini kendisi bağlayamaz. Samba ve NFS paylaşımları için sunucu sürücüyü bağlamalı ve klasörü bind mount ile kapsayıcıya geçirmelidir – bkz. docker-compose.yml. İzin verilen temel yollar: {roots}.",
+  "upd.available": "FamTask {version} hazır",
+  "upd.artifact": "Yeni sürüm hazır",
+  "upd.sub": "Yüklü: {current}",
+  "upd.sub_artifact": "Sürüm güncellendi",
+  "upd.now": "Güncelle",
+  "upd.later": "Daha sonra",
+  "upd.running": "Güncelleme sürüyor …",
+  "upd.done": "Sürüm {version} yüklendi – sayfa yenileniyor",
+  "upd.failed": "Güncelleme başarısız",
 };

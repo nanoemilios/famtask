@@ -778,4 +778,13 @@ window._langData = {
   "remote.unreachable": "remote.php no es accesible: ¿el servidor ejecuta este archivo?",
   "remote.note_title": "Nota sobre SMB/CIFS y NFS",
   "remote.note_body": "PHP no puede montar sistemas de archivos en red por sí mismo. Para recursos Samba y NFS, el host debe montar la unidad y pasar la carpeta al contenedor mediante un bind mount; consulta docker-compose.yml. Rutas base permitidas: {roots}.",
+  "upd.available": "FamTask {version} disponible",
+  "upd.artifact": "Nueva versión disponible",
+  "upd.sub": "Instalado: {current}",
+  "upd.sub_artifact": "La versión publicada se ha actualizado",
+  "upd.now": "Actualizar",
+  "upd.later": "Más tarde",
+  "upd.running": "Actualización en curso …",
+  "upd.done": "Actualizado a {version} – recargando la página",
+  "upd.failed": "Error en la actualización",
 };

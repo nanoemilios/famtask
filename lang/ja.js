@@ -778,4 +778,13 @@ window._langData = {
   "remote.unreachable": "remote.php に接続できません – サーバーでこのファイルが実行されていますか？",
   "remote.note_title": "SMB/CIFS と NFS について",
   "remote.note_body": "PHP はネットワークファイルシステムを自分でマウントできません。Samba や NFS 共有では、ホストがドライブをマウントし、フォルダを bind mount でコンテナに渡す必要があります – docker-compose.yml を参照。許可されるベースパス: {roots}。",
+  "upd.available": "FamTask {version} が利用可能",
+  "upd.artifact": "新しいビルドがあります",
+  "upd.sub": "インストール済み: {current}",
+  "upd.sub_artifact": "リリースが更新されました",
+  "upd.now": "更新する",
+  "upd.later": "あとで",
+  "upd.running": "更新中 …",
+  "upd.done": "{version} に更新しました – ページを再読み込みします",
+  "upd.failed": "更新に失敗しました",
 };

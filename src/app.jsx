@@ -1488,6 +1488,10 @@ const ANIMALS = [
       const [loaded,setLoaded]=useState(false);
       const [toast,setToast]=useState(null);
       const toastHideRef=useRef(null);
+      // Programm-Update: Meldung + laufende Installation
+      const [updInfo,setUpdInfo]=useState(null);   // Antwort von api.php?action=check_update
+      const [updBusy,setUpdBusy]=useState(false);
+      const updPendingRef=useRef(false);           // PIN eingegeben -> Update starten
       const [iCalEvs,setICalEvs]=useState([]);       // iCal-Events vom Server
       const [gcalDay,setGcalDay]=useState(todayStr()); // Global-Kalender selektierter Tag
       const [gcalOff,setGcalOff]=useState(0);          // Monat-Offset für Global-Kalender
@@ -3278,6 +3282,70 @@ const AnimalQuizGame = ({ childId, onBack, onSave }) => {
         };
       },[]);
 
+      // ── Programm-Update: hoechstens 1x pro Tag pruefen ────────────────────
+      // Der Server fragt GitHub nur alle 24 h (Cache in der DB); hier wird
+      // zusaetzlich lokal gemerkt, damit die App nicht bei jedem Start fragt.
+      useEffect(()=>{
+        if(!loaded) return;
+        const DAY = 24*60*60*1000;
+        let ts = 0;
+        try { ts = parseInt(localStorage.getItem('ft-upd-ts')||'0',10)||0; } catch(e){}
+        if (Date.now() - ts < DAY) return;
+        let alive = true;
+        (async()=>{
+          try {
+            const r = await fetch(_apiUrl('check_update'), { headers:{'Accept':'application/json'}, cache:'no-store' });
+            const d = await r.json();
+            if (!alive) return;
+            if (d && d.ok) {
+              try { localStorage.setItem('ft-upd-ts', String(Date.now())); } catch(e){}
+              if (d.update_available || d.artifact_newer) setUpdInfo(d);
+            } else {
+              // GitHub nicht erreichbar: erst in 6 h erneut versuchen
+              try { localStorage.setItem('ft-upd-ts', String(Date.now() - (DAY - 6*60*60*1000))); } catch(e){}
+            }
+          } catch(e) {}
+        })();
+        return ()=>{ alive = false; };
+      },[loaded]);
+
+      // Update aus dem GitHub-Release installieren (Server prueft Admin-PIN).
+      const runUpdate = async () => {
+        if (updBusy) return;
+        setUpdBusy(true);
+        showToast(t('upd.running'));
+        try {
+          const r = await fetch(_apiUrl('self_update'), {
+            method:'POST',
+            headers:{'Content-Type':'application/json','X-Admin-Pin':_adminPin()},
+            body:'{}'
+          });
+          let d = null; try { d = await r.json(); } catch(e){}
+          if (r.ok && d && d.ok) {
+            // Migrationen der *neuen* Fassung ausfuehren: beim Dateitausch
+            // kennt der Server noch die alten Migrationen.
+            try {
+              await fetch(_apiUrl('update'), {
+                method:'POST',
+                headers:{'Content-Type':'application/json','X-Admin-Pin':_adminPin()},
+                body:'{}'
+              });
+            } catch(e) {}
+            setUpdInfo(null);
+            showToast(t('upd.done',{version:d.to||''}));
+            setTimeout(()=>{ try{ location.reload(); }catch(e){} }, 2500);
+          } else {
+            showToast((d && d.msg) || t('upd.failed'), 'err');
+          }
+        } catch(e) { showToast(t('upd.failed'), 'err'); }
+        setUpdBusy(false);
+      };
+      const requestUpdate = () => {
+        if (adminOpen) { runUpdate(); return; }
+        updPendingRef.current = true;   // PIN abfragen, danach Update starten
+        setShowPin(true);
+      };
+
       const sv=(k,v)=>{
         if(_reloading) return;
         try{storage.set(k,JSON.stringify(v));}catch(e){}
@@ -3607,7 +3675,7 @@ const AnimalQuizGame = ({ childId, onBack, onSave }) => {
       };
       const fmtShort=d=>d.toLocaleTimeString(getLocale(),{hour:"2-digit",minute:"2-digit"});
       const getWeekDates=(off=0)=>{const d=new Date(),dow=d.getDay(),mon=new Date(d);mon.setDate(d.getDate()-(dow===0?6:dow-1)+off*7);return Array.from({length:7},(_,i)=>{const x=new Date(mon);x.setDate(mon.getDate()+i);return x;});};
-      const handlePin=digit=>{if(digit==="⌫"){setPinInput(p=>p.slice(0,-1));setPinErr(false);return;}const next=pinInput+digit;setPinInput(next);if(next.length===4){if(next===adminPin){setAdminOpen(true);setShowPin(false);setPinInput("");setPinErr(false);setScreen("admin");}else{setPinErr(true);setTimeout(()=>{setPinInput("");setPinErr(false);},700);}}};
+      const handlePin=digit=>{if(digit==="⌫"){setPinInput(p=>p.slice(0,-1));setPinErr(false);return;}const next=pinInput+digit;setPinInput(next);if(next.length===4){if(next===adminPin){const pendingUpd=updPendingRef.current;updPendingRef.current=false;setAdminOpen(true);setShowPin(false);setPinInput("");setPinErr(false);if(pendingUpd)runUpdate();else setScreen("admin");}else{setPinErr(true);setTimeout(()=>{setPinInput("");setPinErr(false);},700);}}};
       const saveChild=c=>{const{pocketRaw,startPocketRaw,...rest}=c;if(rest.id)setChildren(p=>p.map(x=>x.id===rest.id?rest:x));else setChildren(p=>[...p,{...rest,id:uid(),earnedMinutes:rest.earnedMinutes||0,pocket:rest.pocket||0,weeklyPocket:(typeof rest.weeklyPocket==='number'?rest.weeklyPocket:500),lastWeekCredit:weekKey(new Date())}]);setEditChild(null);showToast(t('common.saved'));};
       const delChild=id=>{setChildren(p=>p.filter(c=>c.id!==id));setTasks(p=>p.map(t=>({...t,assignedTo:t.assignedTo.filter(x=>x!==id)})));showToast(t('common.delete'),"inf");};
       const saveTask=t=>{if(t.id)setTasks(p=>p.map(x=>x.id===t.id?t:x));else setTasks(p=>[...p,{...t,id:uid()}]);setEditTask(null);showToast(t('common.saved'));};
@@ -4513,6 +4581,27 @@ const AnimalQuizGame = ({ childId, onBack, onSave }) => {
           )}
 
           <BottomNav/>
+          {updInfo && (
+            <div className="ft-upd" role="status">
+              <div className="ft-upd-ico">⬆️</div>
+              <div className="ft-upd-txt">
+                <div className="ft-upd-title">
+                  {updInfo.update_available
+                    ? t('upd.available',{version:updInfo.latest})
+                    : t('upd.artifact')}
+                </div>
+                <div className="ft-upd-sub">
+                  {updInfo.update_available
+                    ? t('upd.sub',{current:updInfo.current})
+                    : t('upd.sub_artifact')}
+                </div>
+              </div>
+              <button className="ft-upd-go" disabled={updBusy} onClick={requestUpdate}>
+                {updBusy ? '⏳' : t('upd.now')}
+              </button>
+              <button className="ft-upd-x" aria-label={t('upd.later')} onClick={()=>setUpdInfo(null)}>✕</button>
+            </div>
+          )}
           {toast&&<div className={`ft-toast ${toast.type}`}>{toast.msg}</div>}
         </div>
       );
