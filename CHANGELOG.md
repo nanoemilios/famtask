@@ -101,6 +101,17 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
   `tools/build_og.py`
 - `vendor/fonts/README.md` dokumentiert Herkunft und OFL-Lizenz der Schriften
 
+### Behoben
+
+**Jukebox**
+- Favoriten (und Album-Reihenfolge bzw. letzter Titel je Kind) gingen beim
+  Neuladen verloren: Der Jukebox-Zustand `ft-jb` wurde nur beim ersten
+  Rendern gelesen, wenn der Server-Stand noch nicht geladen war. Er wird
+  jetzt nach dem Laden und bei jedem Server-Reload aus dem Cache übernommen
+- Dabei wurden beim ersten Herz-Tipp nach einem Neuladen die gespeicherten
+  Favoriten aller Kinder überschrieben. Gespeichert wird erst, wenn der
+  Server-Stand geladen ist
+
 ## [1.5.0] – 2026-10-15
 
 ### Hinzugefügt

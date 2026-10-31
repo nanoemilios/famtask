@@ -1536,7 +1536,24 @@ const ANIMALS = [
           return (v && v.kids) ? {lastChild:v.lastChild||'', kids:v.kids||{}} : {lastChild:'', kids:{}};
         } catch(e) { return {lastChild:'', kids:{}}; }
       });
-      const saveJb  = (next) => { setJb(next); storage.set('ft-jb', next); };
+      // Der Startzustand oben ist beim ersten Rendern noch leer, weil der
+      // Server-Stand (_cache) erst im Lade-Effekt ankommt. Deshalb wird jb
+      // dort – und bei jedem Server-Reload – erneut aus dem Cache gelesen.
+      // Vorher darf nichts geschrieben werden, sonst wuerde der leere
+      // Zustand die Favoriten in der Datenbank ueberschreiben.
+      const jbLoadedRef = useRef(false);
+      const loadJb = () => {
+        try {
+          const s = storage.get('ft-jb');
+          const v = s ? JSON.parse(s.value) : null;
+          setJb((v && v.kids) ? {lastChild:v.lastChild||'', kids:v.kids||{}} : {lastChild:'', kids:{}});
+        } catch(e) {}
+        jbLoadedRef.current = true;
+      };
+      const saveJb  = (next) => {
+        if (!jbLoadedRef.current) return;   // noch nicht vom Server geladen
+        setJb(next); storage.set('ft-jb', next);
+      };
 
       // Ansicht 'albums' | 'favs' und gewaehltes Album liegen hier in FamTask
       // und nicht in AudioPlayerScreen: AudioPlayerScreen wird bei jedem
@@ -3225,6 +3242,9 @@ const AnimalQuizGame = ({ childId, onBack, onSave }) => {
             if(r10)setTermine(JSON.parse(r10.value));
             if(r12)setMoneyLog(JSON.parse(r12.value));
           }catch(e){}
+          // Jukebox-Zustand (Favoriten, Album-Reihenfolge, letzter Titel)
+          // kommt erst hier aus dem Cache – siehe loadJb().
+          loadJb();
           // Game scores sind im Cache, kein expliziter State nötig — via storage.get()
           setLoaded(true);
           // ── iCal-Events vom Server laden (stiller Hintergrund-Import) ──
@@ -3250,6 +3270,9 @@ const AnimalQuizGame = ({ childId, onBack, onSave }) => {
             const r9b=storage.get("ft-mt"); if(r9b)setMediaTypes(JSON.parse(r9b.value));
             const r10b=storage.get("ft-ev"); if(r10b)setTermine(JSON.parse(r10b.value));
             const r12b=storage.get("ft-ml"); if(r12b)setMoneyLog(JSON.parse(r12b.value));
+            // Favoriten/Player-Zustand mitziehen, wenn ein anderes Gerät
+            // gespeichert hat oder der manuelle Sync den Server gewinnen liess.
+            loadJb();
             setTimeout(() => { _reloading = false; }, 200);
           }catch(e){ _reloading = false; }
         };
