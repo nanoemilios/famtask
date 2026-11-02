@@ -242,6 +242,7 @@ window._langData = {
   // ── Sackgeld (CHF) ──
   "nav.money": "Money",
   "money.balance": "Balance",
+  "money.correction": "Adjustment",
   "money.weekly_hint": "Weekly amount: {amount}",
   "money.pay_out": "Pay out · {amount}",
   "money.pay_out_title": "Pay out pocket money",

@@ -259,6 +259,7 @@ window._langData = {
   // ── Sackgeld (CHF) ──
   "nav.money": "Geld",
   "money.balance": "Guthaben",
+  "money.correction": "Korrektur",
   "money.weekly_hint": "Wochenbetrag: {amount}",
   "money.pay_out": "Auszahlen · {amount}",
   "money.pay_out_title": "Taschengeld auszahlen",
