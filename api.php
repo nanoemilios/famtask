@@ -1535,9 +1535,98 @@ function showAdminPage(string $tab = ''): void {
     .btn-pri{background:linear-gradient(135deg,#FF6B6B,#FF8E53);color:#fff}
     .btn-sec{background:rgba(78,205,196,.12);border:1.5px solid rgba(78,205,196,.3);color:#4ECDC4}
     .err{color:#FF6B6B;font-size:12px;font-weight:700;text-align:center;margin-top:10px}
+    .pin-disp{background:rgba(255,255,255,.04);border-radius:12px;padding:14px;text-align:center;margin-bottom:12px}
+    .pin-title{font-size:11px;color:rgba(255,255,255,.5);font-weight:700;margin-bottom:10px}
+    .pin-dots{display:flex;gap:10px;justify-content:center}
+    .pin-dot{width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.17);transition:background .15s,transform .15s}
+    .pin-dot.on{background:#FF6B6B;transform:scale(1.1)}
+    .pin-shake{animation:pinShake .4s}
+    @keyframes pinShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+    .pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}
+    .pin-btn{padding:14px 0;min-height:50px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.09);border-radius:12px;color:#fff;font-family:'Segoe UI',Arial,sans-serif;font-size:21px;font-weight:800;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;transition:transform .1s,background .15s}
+    .pin-btn:active{transform:scale(.92);background:rgba(255,255,255,.13)}
+    .pin-btn-del{background:rgba(255,107,107,.12);color:#FF8E8E}
+    .pin-btn-ok{background:rgba(107,203,119,.12);color:#6BCB77}
+    .btn:disabled{opacity:.4;cursor:default}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
     </style></head><body><div class="card"><div class="logo">FamTask</div><div class="sub">Admin-PIN eingeben</div>
-    <form method="post"><label>Admin-PIN (4 Ziffern)</label><input type="password" name="admin_pin" maxlength="4" inputmode="numeric" autofocus/><button class="btn btn-pri">Freischalten</button></form>
-    <?php if (isset($authError)): ?><div class="err"><?= htmlspecialchars($authError) ?></div><?php endif; ?>
+    <form method="post" id="pin-form" autocomplete="off">
+      <label>Admin-PIN (4 Ziffern)</label>
+      <div class="pin-disp">
+        <div class="pin-title">PIN eingeben</div>
+        <div class="pin-dots<?= isset($authError) ? ' pin-shake' : '' ?>" id="pin-dots" aria-hidden="true">
+          <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+        </div>
+        <div class="sr-only" id="pin-sr" aria-live="polite"></div>
+      </div>
+      <input type="hidden" name="admin_pin" id="admin-pin" value=""/>
+      <div class="pin-grid" role="group" aria-label="Ziffernfeld">
+        <button type="button" class="pin-btn" data-pin="1">1</button>
+        <button type="button" class="pin-btn" data-pin="2">2</button>
+        <button type="button" class="pin-btn" data-pin="3">3</button>
+        <button type="button" class="pin-btn" data-pin="4">4</button>
+        <button type="button" class="pin-btn" data-pin="5">5</button>
+        <button type="button" class="pin-btn" data-pin="6">6</button>
+        <button type="button" class="pin-btn" data-pin="7">7</button>
+        <button type="button" class="pin-btn" data-pin="8">8</button>
+        <button type="button" class="pin-btn" data-pin="9">9</button>
+        <button type="button" class="pin-btn pin-btn-del" data-pin="del" aria-label="Letzte Ziffer löschen">⌫</button>
+        <button type="button" class="pin-btn" data-pin="0">0</button>
+        <button type="submit" class="pin-btn pin-btn-ok" id="pin-ok" aria-label="Anmelden" disabled>✓</button>
+      </div>
+      <button type="submit" class="btn btn-pri" id="pin-submit" disabled>Freischalten</button>
+    </form>
+    <?php if (isset($authError)): ?><div class="err" role="alert"><?= htmlspecialchars($authError) ?></div><?php endif; ?>
+    <script>
+    (function(){
+      var pin = '', submitted = false;
+      var form = document.getElementById('pin-form');
+      var hidden = document.getElementById('admin-pin');
+      var dots = document.querySelectorAll('#pin-dots .pin-dot');
+      var okBtn = document.getElementById('pin-ok');
+      var submitBtn = document.getElementById('pin-submit');
+      var live = document.getElementById('pin-sr');
+
+      function render(){
+        hidden.value = pin;
+        for (var i = 0; i < dots.length; i++) dots[i].className = 'pin-dot' + (i < pin.length ? ' on' : '');
+        var full = pin.length === 4;
+        okBtn.disabled = !full;
+        submitBtn.disabled = !full;
+        live.textContent = pin.length + ' von 4 Ziffern eingegeben';
+      }
+
+      function submitPin(){
+        if (submitted || pin.length !== 4) return;
+        submitted = true;
+        form.submit();
+      }
+
+      function press(d){
+        if (submitted) return;
+        if (d === 'del') pin = pin.slice(0, -1);
+        else if (/^[0-9]$/.test(d) && pin.length < 4) pin += d;
+        render();
+        if (pin.length === 4) setTimeout(submitPin, 200);
+      }
+
+      var buttons = document.querySelectorAll('.pin-btn[data-pin]');
+      for (var i = 0; i < buttons.length; i++) {
+        buttons[i].addEventListener('click', function(){ press(this.getAttribute('data-pin')); });
+      }
+      okBtn.addEventListener('click', function(e){ e.preventDefault(); submitPin(); });
+      form.addEventListener('submit', function(e){
+        if (submitted || pin.length !== 4) { e.preventDefault(); return; }
+        submitted = true;
+      });
+      document.addEventListener('keydown', function(e){
+        if (e.key >= '0' && e.key <= '9') { e.preventDefault(); press(e.key); }
+        else if (e.key === 'Backspace') { e.preventDefault(); press('del'); }
+        else if (e.key === 'Enter') { e.preventDefault(); submitPin(); }
+      });
+      render();
+    })();
+    </script>
     </div></body></html><?php
     exit;
     }

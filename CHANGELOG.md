@@ -30,6 +30,14 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ### Geändert
 
+**Admin-Anmeldung**
+- `api.php?action=admin` zeigt statt des PIN-Eingabefelds ein Ziffernfeld mit
+  vier Punkten wie beim Eltern-PIN in der App. Auf Tablets und Handys bleibt
+  die Bildschirmtastatur geschlossen; Ziffern, Löschen und Eingabe funktionieren
+  zusätzlich über die Hardware-Tastatur
+- Nach der vierten Ziffer wird die PIN automatisch geprüft, bei Fehleingabe
+  schüttelt das Display die Punkte und zeigt „Falscher PIN"
+
 **Icon & PWA**
 - Neues Favicon-/App-Icon: F und Haken als getrennte Formen auf der
   Marken-Kachel (Gradient `#FF6B6B` → `#FFE66D`, Grund `#0D0E1A`)
